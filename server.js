@@ -1,3 +1,5 @@
+'use strict';
+
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -8,108 +10,143 @@ const winston = require('winston');
 const expressWinston = require('express-winston');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const redis = require('redis');
-const https = require('https');
-const expressRequestId = require('express-request-id')();
+const cors = require('cors');
+const { createClient } = require('redis');
+const { RedisStore } = require('connect-redis');
 const logger = require('./utils/logger.js');
 const requestLogger = require('./utils/requestLogger.js');
+const expressRequestId = require('express-request-id')();
 
-// Set up port to be either the host's designated port, or 3001
 const PORT = process.env.PORT || 3001;
-
-// Instantiate Express App
 const app = express();
-
-// Import sequelize models
 const db = require('./models');
 
-// Initialize Redis store
-let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient(process.env.REDIS_URL);
+// =========================================================================
+// Redis + Session setup
+// =========================================================================
 
-// Setup express app
-app.use(cookieParser()); // read cookies (needed for auth)
+const redisClient = createClient({
+    url: process.env.REDIS_URL
+});
+
+redisClient.connect().catch((err) => {
+    logger.error('Redis connection error:', err);
+});
+
+redisClient.on('error', (err) => logger.error('Redis client error:', err));
+redisClient.on('connect', () => logger.info('Redis client connected.'));
+
+const sessionStore = new RedisStore({ client: redisClient });
+
+app.use(cookieParser());
 app.use(
-  session({
-    store: new RedisStore({ client: redisClient }),
-    saveUninitialized: true,
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  })
+    session({
+        store: sessionStore,
+        saveUninitialized: false,
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        cookie: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000
+        }
+    })
 );
+
+// =========================================================================
+// Core middleware
+// =========================================================================
+
+app.use(
+    cors({
+        origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+        credentials: true
+    })
+);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Appends request ID to request object
 app.use(expressRequestId);
 
-// Pass passport for configuration
+// =========================================================================
+// Auth middleware
+// =========================================================================
+
 require('./config/passport')(passport, db.User);
 
-// Required for passport
 app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-app.use(flash()); // use connect-flash for flash messages stored in session
+app.use(passport.session());
+app.use(flash());
 
-// express-winston logger BEFORE the router
-app.use(expressWinston.logger({
-  transports: [
-    new winston.transports.Console({
-      json: true,
-      timestamp: new Date().toISOString(),
-      colorize: true
+// =========================================================================
+// Logging middleware
+// =========================================================================
+
+app.use(
+    expressWinston.logger({
+        transports: [
+            new winston.transports.Console()
+        ],
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.timestamp(),
+            winston.format.json()
+        ),
+        meta: true,
+        expressFormat: true,
+        colorize: true
     })
-  ]
-}));
+);
 
-// Implement Morgan request logger
-app.use(morgan('dev')); // log every request to the console
+app.use(morgan('dev'));
 app.use(requestLogger);
 
-// Set default engine, and provide [react] extension
-app.engine('js', require('express-react-views').createEngine());
-app.set('views', __dirname + '/client/src/pages');
-app.set('view engine', 'js');
+// =========================================================================
+// API Routes
+// =========================================================================
 
-// Serve up static assets
-app.use(express.static('client/build'));
+require('./routes/routes')(app, passport);
 
-// Routes ======================================================================
-require('./routes/routes')(app, passport); // load our routes and pass in our app and fully configured passport
+// =========================================================================
+// Static assets + catch-all (production only)
+// =========================================================================
 
-// Define any API routes before this runs
-app.use('*', (req, res) => {
-  res.sendFile(path.join(__dirname, './client/build/index.html'));
+// In development, React runs on its own dev server (port 3000) and Express
+// only needs to handle API routes. Serving the build folder in dev causes
+// 500 errors since client/build doesn't exist until `npm run build` is run.
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'client/build')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'client/build/index.html'));
+    });
+}
+
+// =========================================================================
+// Error handlers
+// =========================================================================
+
+app.use((req, res) => {
+    logger.warn(`404: ${req.method} ${req.originalUrl}`);
+    return res.status(404).json({ error: 'Not found' });
 });
 
-// Request error handling
-app.use((request, response) => {
-  console.warn(new Date().toISOString(), request.method, request.originalUrl, '404');
-  return response.status(404).render('404', {
-    title: '404',
-  })
+app.use((err, req, res, next) => {
+    if (res.headersSent) {
+        return next(err);
+    }
+    logger.error(err.stack);
+    return res.status(500).json({ error: 'Internal server error' });
 });
 
-// Error handling
-app.use((error, request, response, next) => {
-  if (response.headersSent) {
-    return next(error);
-  }
-  console.log(error);
-  return response.status(500).render('500', {
-    title: '500',
-  });
-});
+// =========================================================================
+// Start server
+// =========================================================================
 
-// Run server and sync database
 db.sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🌎 ==> Server now on port ${PORT}!`);
-  })
-  .on('listening', () => logger.info(`HTTP server listening on port ${PORT}!`));
+    app.listen(PORT, () => {
+        logger.info(`Server now on port ${PORT}!`);
+    });
 });
 
 module.exports = app;

@@ -8,7 +8,7 @@
   user-select: none;
   -moz-appearance: none;
   -webkit-appearance: none;
-  background-color: rgba(10, 10, 10, 0.2);
+  background-color: rgba(10.2, 10.2, 10.2, 0.2);
   border: none;
   border-radius: 290486px;
   cursor: pointer;
@@ -28,7 +28,7 @@
   width: 20px;
 }
 .modal-close::before, .modal-close::after {
-  background-color: white;
+  background-color: hsl(0, 0%, 100%);
   content: "";
   display: block;
   left: 50%;
@@ -46,10 +46,10 @@
   width: 2px;
 }
 .modal-close:hover, .modal-close:focus {
-  background-color: rgba(10, 10, 10, 0.3);
+  background-color: rgba(10.2, 10.2, 10.2, 0.3);
 }
 .modal-close:active {
-  background-color: rgba(10, 10, 10, 0.4);
+  background-color: rgba(10.2, 10.2, 10.2, 0.4);
 }
 .is-small.modal-close {
   height: 16px;
@@ -98,7 +98,7 @@
 }
 
 .modal-background {
-  background-color: rgba(10, 10, 10, 0.86);
+  background-color: rgba(10.2, 10.2, 10.2, 0.86);
 }
 
 .modal-content,
@@ -111,7 +111,7 @@
 }
 @media screen and (min-width: 769px) {
   .modal-content,
-.modal-card {
+  .modal-card {
     margin: 0 auto;
     max-height: calc(100vh - 40px);
     width: 640px;
@@ -138,7 +138,7 @@
 .modal-card-head,
 .modal-card-foot {
   align-items: center;
-  background-color: whitesmoke;
+  background-color: hsl(0, 0%, 96%);
   display: flex;
   flex-shrink: 0;
   justify-content: flex-start;
@@ -147,13 +147,13 @@
 }
 
 .modal-card-head {
-  border-bottom: 1px solid #dbdbdb;
+  border-bottom: 1px solid hsl(0, 0%, 86%);
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }
 
 .modal-card-title {
-  color: #363636;
+  color: hsl(0, 0%, 21%);
   flex-grow: 1;
   flex-shrink: 0;
   font-size: 1.5rem;
@@ -163,7 +163,7 @@
 .modal-card-foot {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
-  border-top: 1px solid #dbdbdb;
+  border-top: 1px solid hsl(0, 0%, 86%);
 }
 .modal-card-foot .button:not(:last-child) {
   margin-right: 0.5em;
@@ -171,7 +171,7 @@
 
 .modal-card-body {
   -webkit-overflow-scrolling: touch;
-  background-color: white;
+  background-color: hsl(0, 0%, 100%);
   flex-grow: 1;
   flex-shrink: 1;
   overflow: auto;

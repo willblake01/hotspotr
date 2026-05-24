@@ -1,8 +1,10 @@
 .dashboard-cont:before {
     content: "";
     position: fixed;
-    left: 0;
-    right: 0;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
     padding: 0;
     margin: 0;
     z-index: 0;
@@ -10,8 +12,6 @@
     background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
     url("https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/dashboard-background.jpg");
     background-size: cover;
-    height: 100%;
-    width: 100%;
     -webkit-filter: blur(5px);
     -moz-filter: blur(5px);
     -o-filter: blur(5px);
