@@ -1,13 +1,50 @@
+# macOS
 .DS_Store
+
+# IDEs & editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment variables — all variants, root and nested
 .env
-node_modules*
-*.zip
-*.gz
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Logs
 log/*.log
 log/*.log.[0-9]
-*/build
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
+# Build output
+*/build
+dist/
+
+# Compressed
+*.zip
+*.gz
+
+# Sass / CSS maps
 .sass-cache/
 *.css.map
 *.sass.map
 *.scss.map
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# PM2
+ecosystem.config.js
+
+# Sequelize
+config/config.js

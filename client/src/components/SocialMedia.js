@@ -11,8 +11,5 @@ export const SocialMedia = ({socialClass}) => (
         <a href='https://www.instagram.com' target='_blank' rel='noopener noreferrer'>
             <img src='https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/instagram-brown.svg' className='social-icon' alt='instagram' />
         </a>
-        <a href='https://plus.google.com/' target='_blank' rel='noopener noreferrer'>
-            <img src='https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/google-brown.svg' className='social-icon' alt='google' />
-        </a>
     </div>
 )

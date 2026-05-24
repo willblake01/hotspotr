@@ -1,63 +1,65 @@
 {
   "name": "hotspotr",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "engines": {
-    "node": ">=16.1.0",
-    "yarn": "1.22.10"
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
-  "description": "This is a Business Planning tool meant to replace the research necessary to identify a Target Market, conduct a Competitive Analysis, and find that perfect location.",
+  "description": "Business planning tool using heatmaps to identify optimal business locations via demographic, wage, and competitor density data.",
   "main": "server.js",
   "scripts": {
     "server": "node server.js",
-    "client": "cd client && yarn start",
+    "client": "cd client && npm start",
     "start": "pm2-runtime start ecosystem.config.js --env production",
-    "dev-start": "concurrently \"nodemon server.js\" \"yarn client\"",
-    "build": "cd client && yarn install && yarn build",
-    "deploy": "yarn build && git add . && git commit -m \"Building for production\" && git push heroku main",
-    "test": "mocha test/test.js",
-    "installDeps": "yarn && cd client && yarn",
-    "sass": "sass --watch src/styles/scss:src/styles/css"
+    "dev": "concurrently \"nodemon server.js\" \"npm run client\"",
+    "build": "cd client && npm install && npm run build",
+    "test": "mocha test/test.js --exit",
+    "installDeps": "npm install && cd client && npm install",
+    "lint": "eslint . --ext .js"
   },
   "author": "Will Blake",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "browser-sync": "^2.24.7",
-    "concurrently": "^4.0.1",
-    "nodemon": "^1.18.4"
+    "concurrently": "^9.1.0",
+    "eslint": "^9.18.0",
+    "mocha": "^11.0.1",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.0.0"
   },
   "dependencies": {
-    "axios": "^0.21.1",
-    "bcrypt-nodejs": "^0.0.3",
-    "chai": "^4.3.4",
+    "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
+    "chai": "^5.1.2",
     "connect-ensure-login": "^0.1.1",
     "connect-flash": "^0.1.1",
-    "connect-redis": "^5.2.0",
-    "cookie-parser": "^1.4.5",
-    "dotenv": "^9.0.0",
-    "express": "^4.17.1",
-    "express-react-views": "^0.11.0",
+    "connect-redis": "^9.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "express-request-id": "^1.4.1",
-    "express-session": "^1.17.2",
-    "express-winston": "^4.1.0",
-    "local": "^0.3.3",
+    "express-session": "^1.18.1",
+    "express-winston": "^4.2.0",
     "morgan": "^1.10.0",
-    "mysql2": "^2.2.5",
-    "passport": "^0.4.1",
+    "mysql2": "^3.12.0",
+    "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "pm2": "^4.5.6",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "redis": "^3.1.2",
-    "sequelize": "^6.6.2",
-    "sequelize-cli": "^4.0.0",
-    "supertest": "^3.1.0",
-    "winston": "^3.1.0"
+    "pm2": "^5.4.3",
+    "redis": "^5.0.0",
+    "sequelize": "^6.37.5",
+    "sequelize-cli": "^6.6.2",
+    "winston": "^3.17.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/willblake01/hotspotr.git"
   },
-  "keywords": [],
+  "keywords": [
+    "heatmap",
+    "business-planning",
+    "location-analysis",
+    "demographics"
+  ],
   "bugs": {
     "url": "https://github.com/willblake01/hotspotr/issues"
   },

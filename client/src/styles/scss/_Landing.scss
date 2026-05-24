@@ -1,16 +1,16 @@
 .landing-cont:before {
     content: "";
     position: fixed;
-    left: 0;
-    right: 0;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
     padding: 0;
     margin: 0;
     z-index: 0;
     display: block;
     background-image: url("https://res.cloudinary.com/willblake01/image/upload/v1538510016/hotspotr/landing-background.jpg");
     background-size: cover;
-    width: 100%;
-    height: 100%;
     -webkit-filter: blur(5px);
     -moz-filter: blur(5px);
     -o-filter: blur(5px);

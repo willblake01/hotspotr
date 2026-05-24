@@ -7,13 +7,11 @@ module.exports = (app, passport) => {
   });
 
   // LOGOUT ==============================
-  app.get('/logout', (req, res) => {
-    if (req.user) {
-      req.logout();
+  app.get('/logout', (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
       res.send(false);
-    } else {
-      res.send(false);
-    }
+    });
   });
 
   // =============================================================================

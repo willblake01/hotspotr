@@ -18,11 +18,8 @@ export const userLogIn = user => {
   )
 }
 
-export const userLogOut = user => {
-  axios.get('/logout', user)
-  .then(() => {
-    return user;
-  })
+export const userLogOut = () => {
+  return axios.get('/logout');
 }
 
 export const sendTest = keyword => {
