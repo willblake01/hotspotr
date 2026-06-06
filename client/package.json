@@ -7,8 +7,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "sass": "sass --watch src/styles/scss:src/styles/css"
+    "eject": "react-scripts eject"
   },
   "dependencies": {
     "@mui/material": "^5.16.7",
@@ -26,8 +25,7 @@
     "react-transition-group": "^4.4.5",
     "redux": "^5.0.1",
     "@reduxjs/toolkit": "^2.3.0",
-    "@redux-devtools/extension": "^3.3.0",
-    "sass": "^1.81.0"
+    "@redux-devtools/extension": "^3.3.0"
   },
   "devDependencies": {
     "@testing-library/react": "^16.0.0",

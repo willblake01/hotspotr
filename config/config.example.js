@@ -8,27 +8,27 @@ require('dotenv').config();
 
 module.exports = {
   development: {
-    username: process.env.DB_USERNAME,  // e.g. root
-    password: process.env.DB_PASSWORD,  // your local MySQL password
-    database: process.env.DB_NAME || 'hotspotr',
-    host: process.env.DB_HOST || '127.0.0.1',
-    port: process.env.DB_PORT || 3306,
+    username: process.env.DATABASE_USERNAME,  // e.g. root
+    password: process.env.DATABASE_PASSWORD,  // your local MySQL password
+    database: process.env.DATABASE_NAME || 'hotspotr',
+    host: process.env.DATABASE_HOST || '127.0.0.1',
+    port: process.env.DATABASE_PORT || 3306,
     dialect: 'mysql',
     logging: false
   },
   test: {
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_TEST || 'hotspotr_test',
-    host: process.env.DB_HOST || '127.0.0.1',
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME_TEST || 'hotspotr_test',
+    host: process.env.DATABASE_HOST || '127.0.0.1',
     dialect: 'mysql',
     logging: false
   },
   production: {
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_PRODUCTION,
-    host: process.env.DB_HOST,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME_PRODUCTION,
+    host: process.env.DATABASE_HOST,
     dialect: 'mysql',
     logging: false
   }

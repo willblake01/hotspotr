@@ -1,5 +1,15 @@
 import React from 'react';
+import { Box } from '@mui/material';
 
-export const Logo2 = ({logo2Class}) => (
-    <img className={logo2Class} src='https://res.cloudinary.com/willblake01/image/upload/v1538510016/hotspotr/logo2.png' alt='Hot Spotr' />
+export const Logo2 = ({ size = '4vw' }) => (
+    <Box
+        component='img'
+        src='https://res.cloudinary.com/willblake01/image/upload/v1538510016/hotspotr/logo2.png'
+        alt='Hot Spotr'
+        sx={{
+            height: 'auto',
+            width: size,
+            borderRadius: '25px',
+        }}
+    />
 );
