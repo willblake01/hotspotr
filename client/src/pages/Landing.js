@@ -85,7 +85,7 @@ export const Landing = () => {
                 {/* .main-title */}
                 <Typography
                     variant='h1'
-                    sx={{ fontSize: '6vw', color: WHITE, fontWeight: 'bold', lineHeight: 1.1 }}
+                    sx={{ fontSize: '6vw', color: WHITE, fontWeight: 'bold', lineHeight: 1.1, mb: '8px' }}
                 >
                   HotSpotr
                 </Typography>
@@ -95,7 +95,15 @@ export const Landing = () => {
                     variant='body1'
                     sx={{ fontSize: '1.5vw', color: WHITE }}
                 >
-                  Locate the low hanging fruit
+                  Where should you open?
+                </Typography>
+
+                {/* .sub-subtitle */}
+                <Typography
+                    variant='body2'
+                    sx={{ fontSize: '1.2vw', color: WHITE, maxWidth: '400px' }}
+                >
+                  Heatmap-powered insights on demographics, income, and competition for any US city.
                 </Typography>
 
                 {/* .button-group */}
