@@ -1,59 +1,60 @@
 import React, { useState } from 'react';
-import { ProgressBar } from './ProgressBar';
-import { userLogOut } from '../utils/API';
 import { useSelector } from 'react-redux';
-import { Box, Typography, Button, Divider, Stack } from '@mui/material';
+import { Box, Button, Divider, Stack, Typography, useTheme } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MapIcon from '@mui/icons-material/Map';
 import LogoutIcon from '@mui/icons-material/Logout';
-
-// CSS variables from _Variables.scss
-const ORANGE = 'var(--orange)';
-const BROWN  = 'var(--brown)';
-const WHITE  = 'var(--white)';
-
-const navItems = [
-  { label: 'TARGET INDUSTRY',     icon: <BusinessIcon />,   handler: 'handleToggleIndustry'    },
-  { label: 'TARGET LOCATION',     icon: <LocationOnIcon />, handler: 'handleToggleLocation'    },
-  { label: 'TARGET DEMOGRAPHICS', icon: <GroupsIcon />,     handler: 'handleToggleDemographic' },
-  { label: 'COMPETITION HEATMAP', icon: <MapIcon />,        handler: 'handleToggleHeatmap'     },
-];
-
-// Shared button styles — mirrors .sidebar-link and .sidebar-link:hover
-const sidebarLinkSx = {
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  fontSize: '13px',
-  width: '100%',
-  px: '20px',
-  py: '10px',
-  color: WHITE,
-  border: `2px solid ${BROWN}`,
-  borderRadius: '25px',
-  mx: '4px',
-  my: '4px',
-  transition: 'all .2s ease-in-out',
-  textTransform: 'none',
-  fontWeight: 600,
-  letterSpacing: '0.05em',
-  // Icon color — mirrors .fa-* color: var(--brown)
-  '& .MuiButton-startIcon svg': {
-    color: BROWN,
-    fontSize: '25px',
-  },
-  '&:hover': {
-    color: BROWN,
-    bgcolor: WHITE,
-    transform: 'scale(1.1)',
-    borderRadius: '25px',
-  },
-};
+import { ProgressBar } from './ProgressBar';
+import { userLogOut } from '../utils/API';
 
 export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap }) => {
+    const theme = useTheme();
+
+    const ORANGE = theme.palette.primary.main;
+    const BROWN  = theme.palette.secondary.main;
+    const WHITE  = theme.custom.white;
+
+    const navItems = [
+        { label: 'TARGET INDUSTRY',     icon: <BusinessIcon />,   handler: 'handleToggleIndustry'    },
+        { label: 'TARGET LOCATION',     icon: <LocationOnIcon />, handler: 'handleToggleLocation'    },
+        { label: 'TARGET DEMOGRAPHICS', icon: <GroupsIcon />,     handler: 'handleToggleDemographic' },
+        { label: 'COMPETITION HEATMAP', icon: <MapIcon />,        handler: 'handleToggleHeatmap'     },
+    ];
+
+    // Shared button styles — mirrors .sidebar-link and .sidebar-link:hover
+    const sidebarLinkSx = {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        fontSize: '13px',
+        width: '100%',
+        px: '20px',
+        py: '10px',
+        color: WHITE,
+        border: `2px solid ${BROWN}`,
+        borderRadius: '25px',
+        mx: '4px',
+        my: '4px',
+        transition: 'all .2s ease-in-out',
+        textTransform: 'none',
+        fontWeight: 600,
+        letterSpacing: '0.05em',
+
+        '& .MuiButton-startIcon svg': {
+            color: BROWN,
+            fontSize: '25px',
+        },
+        '&:hover': {
+            color: BROWN,
+            bgcolor: WHITE,
+            transform: 'scale(1.1)',
+            borderRadius: '25px',
+        },
+    };
+
   const [completed, setCompleted] = useState(0);
   const user = useSelector((state) => state.user);
 
