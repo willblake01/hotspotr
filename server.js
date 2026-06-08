@@ -94,7 +94,12 @@ app.use(
         ),
         meta: true,
         expressFormat: true,
-        colorize: true
+        colorize: true,
+
+        // Security: Prevent logging of sensitive fields
+        requestWhitelist: ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query'],
+        bodyBlacklist: ['password', 'localpassword', 'newPassword', 'oldPassword', 'confirmPassword'],
+        ignoreRoute: function (req, res) { return false; }
     })
 );
 
