@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { authValidationRules, validateRequest } = require('../middleware/validation');
 
 module.exports = (app, passport) => {
   // PROFILE SECTION =========================
@@ -19,21 +20,49 @@ module.exports = (app, passport) => {
   // =============================================================================
   // LOGIN ===============================
   // process the login form
-  app.post(
-    '/login',
-    passport.authenticate('local-login'), (req, res) => {
-      req.user ? res.redirect('/dashboard') : res.redirect('/')
-    }
-  );
+  app.post('/login', authValidationRules, validateRequest, (req, res, next) => {
+    passport.authenticate('local-login', (err, user, info) => {
+      if (err) {
+        return res.status(500).json({ error: 'Authentication error', details: err.message });
+      }
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid credentials', message: info?.message || 'Login failed' });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: 'Session error', details: err.message });
+        }
+        return res.redirect('/dashboard');
+      });
+    })(req, res, next);
+  });
 
   // SIGNUP =================================
   // Process the signup form
-  app.post(
-    '/signup',
-    passport.authenticate('local-signup'), (req, res) => {
-      req.user ? res.redirect('/dashboard') : res.redirect('/')
+  app.post('/signup', authValidationRules, validateRequest, (req, res, next) => {
+    // Security: Prevent logged-in users from using signup to change credentials
+    if (req.user) {
+      return res.status(403).json({
+        error: 'Already logged in',
+        message: 'You are already logged in. Please log out first to create a new account.'
+      });
     }
-  );
+
+    passport.authenticate('local-signup', (err, user, info) => {
+      if (err) {
+        return res.status(500).json({ error: 'Signup error', details: err.message });
+      }
+      if (!user) {
+        return res.status(400).json({ error: 'Signup failed', message: info?.message || 'Unable to create account' });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: 'Session error', details: err.message });
+        }
+        return res.redirect('/dashboard');
+      });
+    })(req, res, next);
+  });
 
   app.post('/call', (req, res) => {
     const keyword = req.body.keyword;

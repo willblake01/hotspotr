@@ -68,30 +68,17 @@ module.exports = (passport, user) => {
             (req, email, password, done) => {
                 User.findOne({ where: { localemail: email } })
                     .then((existingUser) => {
-                        // BUG FIX: original code was missing `return` here, causing execution
-                        // to fall through into the req.user and newUser blocks simultaneously.
                         if (existingUser) {
                             return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
                         }
 
-                        // Hash the password — bcryptjs.hashSync no longer takes a null third arg
+                        // Hash the password
                         const hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8));
 
-                        // Connecting a new local account to an existing session
-                        if (req.user) {
-                            const user = req.user;
-                            user.localemail = email;
-                            // BUG FIX: original called User.generateHash() as a static method,
-                            // but generateHash is an instance method on User.prototype.
-                            // Using bcrypt directly here is clearer and avoids the confusion.
-                            user.localpassword = hashedPassword;
-                            return user
-                                .save()
-                                .then((savedUser) => done(null, savedUser))
-                                .catch((err) => done(err));
-                        }
-
-                        // Brand new user
+                        // Create brand new user
+                        // Note: The previous OAuth account linking logic has been removed
+                        // as it posed a security vulnerability. Logged-in users are now
+                        // prevented from accessing the signup endpoint in routes.js
                         const newUser = User.build({
                             localemail: email,
                             localpassword: hashedPassword
