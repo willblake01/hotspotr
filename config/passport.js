@@ -80,8 +80,8 @@ module.exports = (passport, user) => {
                         // as it posed a security vulnerability. Logged-in users are now
                         // prevented from accessing the signup endpoint in routes.js
                         const newUser = User.build({
-                            firstName: req.body.firstName,
-                            lastName: req.body.lastName,
+                            firstName: req.body.firstName || null,
+                            lastName: req.body.lastName || null,
                             localemail: email,
                             localpassword: hashedPassword
                         });
