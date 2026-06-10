@@ -14,7 +14,12 @@ export const getCurrentUser = () => {
 export const userSignUp = user => {
   return axios.post('/signup', user)
     .then((response) => {
-      return user;
+      // Return safe user data from server (no password)
+      return {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      };
     })
     .catch((error) => {
       console.error('Signup error:', error.response?.data || error.message);
@@ -25,7 +30,10 @@ export const userSignUp = user => {
 export const userLogIn = user => {
   return axios.post('/login', user)
     .then((response) => {
-      return user;
+      // Return only email (no password) for security
+      return {
+        email: user.email
+      };
     })
     .catch((error) => {
       console.error('Login error:', error.response?.data || error.message);
