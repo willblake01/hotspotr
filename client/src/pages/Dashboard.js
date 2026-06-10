@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material'
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';
@@ -16,6 +17,7 @@ const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/h
 export const Dashboard = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const BROWN = theme.palette.secondary.main;
   const WHITE = theme.custom.white;
@@ -26,15 +28,22 @@ export const Dashboard = () => {
   const [location, setLocation] = useState('');
   const [demographic, setDemographic] = useState('');
   const [placesResults, setPlacesResults] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch current user on mount
+  // Fetch current user on mount and redirect if not authenticated
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user) {
         dispatch(setUser(user));
+        setIsAuthenticated(true);
+      } else {
+        // User is not authenticated, redirect to landing page
+        navigate('/', { replace: true });
       }
+      setIsLoading(false);
     });
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
   const handleClose = () => setOpen(false);
 
@@ -77,6 +86,16 @@ export const Dashboard = () => {
         return null;
     }
   };
+
+  // Don't render dashboard until authentication is verified
+  if (isLoading) {
+    return null;
+  }
+
+  // If not authenticated, don't render (navigation will happen in useEffect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
       // .dashboard-cont — full viewport with blurred background

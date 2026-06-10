@@ -93,5 +93,5 @@ module.exports = (app, passport) => {
 
 // route middleware to ensure user is logged in
 const isLoggedIn = (req, res, next) => {
-  req.isAuthenticated ? next() : res.redirect('/')
+  req.isAuthenticated() ? next() : res.redirect('/')
 }
