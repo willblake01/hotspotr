@@ -62,10 +62,10 @@ describe('Authentication Validation', function() {
     });
   });
 
-  describe('POST /login', function() {
+  describe('POST /auth/login', function() {
     it('should reject empty email', function(done) {
       request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ email: '', password: 'password123' })
         .expect(400)
         .end(function(err, res) {
@@ -77,7 +77,7 @@ describe('Authentication Validation', function() {
 
     it('should reject invalid email format', function(done) {
       request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ email: 'notanemail', password: 'password123' })
         .expect(400)
         .end(function(err, res) {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const getCurrentUser = () => {
-  return axios.get('/api/user/current')
+  return axios.get('/auth/user')
     .then((response) => {
       return response.data;
     })
@@ -12,8 +12,8 @@ export const getCurrentUser = () => {
 }
 
 export const userSignUp = user => {
-  return axios.post('/signup', user)
-    .then((response) => {
+  return axios.post('/auth/signup', user)
+    .then((_response) => {
       // Return safe user data from server (no password)
       return {
         email: user.email,
@@ -28,8 +28,8 @@ export const userSignUp = user => {
 }
 
 export const userLogIn = user => {
-  return axios.post('/login', user)
-    .then((response) => {
+  return axios.post('/auth/login', user)
+    .then((_response) => {
       // Return only email (no password) for security
       return {
         email: user.email
@@ -42,9 +42,9 @@ export const userLogIn = user => {
 }
 
 export const userLogOut = () => {
-  return axios.get('/logout');
+  return axios.post('/auth/logout');
 }
 
 export const sendTest = keyword => {
-  return axios.post('/call', keyword);
+  return axios.post('/api/call', keyword);
 }

@@ -2,8 +2,12 @@ const axios = require('axios');
 const { authValidationRules, signupValidationRules, validateRequest } = require('../middleware/validation');
 
 module.exports = (app, passport) => {
+  // =============================================================================
+  // AUTH ROUTES ================================================================
+  // =============================================================================
+
   // Get current logged-in user
-  app.get('/api/user/current', (req, res) => {
+  app.get('/auth/user', (req, res) => {
     if (req.user) {
       // Only send safe user data (no password)
       res.json({
@@ -17,25 +21,9 @@ module.exports = (app, passport) => {
     }
   });
 
-  // PROFILE SECTION =========================
-  app.get('/dashboard', isLoggedIn, (req, res) => {
-    req.user ? res.send(true) : res.send(false)
-  });
-
-  // LOGOUT ==============================
-  app.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.send(false);
-    });
-  });
-
-  // =============================================================================
-  // AUTHENTICATE (FIRST LOGIN) ==================================================
-  // =============================================================================
   // LOGIN ===============================
-  // process the login form
-  app.post('/login', authValidationRules, validateRequest, (req, res, next) => {
+  // Process the login form
+  app.post('/auth/login', authValidationRules, validateRequest, (req, res, next) => {
     passport.authenticate('local-login', (err, user, info) => {
       if (err) {
         return res.status(500).json({ error: 'Authentication error', details: err.message });
@@ -54,7 +42,7 @@ module.exports = (app, passport) => {
 
   // SIGNUP =================================
   // Process the signup form
-  app.post('/signup', signupValidationRules, validateRequest, (req, res, next) => {
+  app.post('/auth/signup', signupValidationRules, validateRequest, (req, res, next) => {
     // Security: Prevent logged-in users from using signup to change credentials
     if (req.user) {
       return res.status(403).json({
@@ -79,7 +67,28 @@ module.exports = (app, passport) => {
     })(req, res, next);
   });
 
-  app.post('/call', (req, res) => {
+  // LOGOUT ==============================
+  app.post('/auth/logout', (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      res.json({ success: true, message: 'Logged out successfully' });
+    });
+  });
+
+  // =============================================================================
+  // PROTECTED ROUTES ===========================================================
+  // =============================================================================
+
+  // PROFILE SECTION =========================
+  app.get('/dashboard', isLoggedIn, (req, res) => {
+    req.user ? res.send(true) : res.send(false)
+  });
+
+  // =============================================================================
+  // API ROUTES =================================================================
+  // =============================================================================
+
+  app.post('/api/call', (req, res) => {
     const keyword = req.body.keyword;
     axios
       .get(
