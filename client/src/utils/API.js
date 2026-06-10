@@ -38,5 +38,5 @@ export const userLogOut = () => {
 }
 
 export const sendTest = keyword => {
-  axios.post('/call', keyword);
+  return axios.post('/call', keyword);
 }
