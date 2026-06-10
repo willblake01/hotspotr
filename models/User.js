@@ -6,6 +6,20 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
       'User',
       {
+        firstName: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          validate: {
+            len: [0, 50]
+          }
+        },
+        lastName: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          validate: {
+            len: [0, 50]
+          }
+        },
         localemail: {
           type: DataTypes.STRING,
           allowNull: false,

@@ -1,7 +1,22 @@
 const axios = require('axios');
-const { authValidationRules, validateRequest } = require('../middleware/validation');
+const { authValidationRules, signupValidationRules, validateRequest } = require('../middleware/validation');
 
 module.exports = (app, passport) => {
+  // Get current logged-in user
+  app.get('/api/user/current', (req, res) => {
+    if (req.user) {
+      // Only send safe user data (no password)
+      res.json({
+        id: req.user.id,
+        email: req.user.localemail,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName
+      });
+    } else {
+      res.status(401).json({ error: 'Not authenticated' });
+    }
+  });
+
   // PROFILE SECTION =========================
   app.get('/dashboard', isLoggedIn, (req, res) => {
     req.user ? res.send(true) : res.send(false)
@@ -39,7 +54,7 @@ module.exports = (app, passport) => {
 
   // SIGNUP =================================
   // Process the signup form
-  app.post('/signup', authValidationRules, validateRequest, (req, res, next) => {
+  app.post('/signup', signupValidationRules, validateRequest, (req, res, next) => {
     // Security: Prevent logged-in users from using signup to change credentials
     if (req.user) {
       return res.status(403).json({

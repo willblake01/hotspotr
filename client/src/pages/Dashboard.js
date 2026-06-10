@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTheme } from '@mui/material'
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';
 import { Maps } from '../components/Maps.js';
 import { Drawer, MenuItem, Box, Typography } from '@mui/material';
 import { IndustryForm, LocationForm, DemographicForm } from '../components/Forms';
-import { sendTest } from '../utils/API';
+import { sendTest, getCurrentUser } from '../utils/API';
+import { setUser } from '../actions/actionCreators';
 import { Logo2 } from '../components/Logo2.js';
 import { Footer } from '../components/Footer.js';
 
@@ -13,6 +15,7 @@ const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/h
 
 export const Dashboard = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
 
   const BROWN = theme.palette.secondary.main;
   const WHITE = theme.custom.white;
@@ -23,6 +26,15 @@ export const Dashboard = () => {
   const [location, setLocation] = useState('');
   const [demographic, setDemographic] = useState('');
   const [placesResults, setPlacesResults] = useState([]);
+
+  // Fetch current user on mount
+  useEffect(() => {
+    getCurrentUser().then((user) => {
+      if (user) {
+        dispatch(setUser(user));
+      }
+    });
+  }, [dispatch]);
 
   const handleClose = () => setOpen(false);
 

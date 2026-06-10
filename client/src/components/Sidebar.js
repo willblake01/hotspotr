@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Box, Button, Divider, Stack, Typography, useTheme } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -8,6 +8,7 @@ import MapIcon from '@mui/icons-material/Map';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { ProgressBar } from './ProgressBar';
 import { userLogOut } from '../utils/API';
+import { logout } from '../actions/actionCreators';
 
 export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap }) => {
     const theme = useTheme();
@@ -57,15 +58,25 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
 
   const [completed, setCompleted] = useState(0);
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const handlers = { handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap };
 
   const handleLogOut = () => {
     userLogOut()
       .then(() => {
+        dispatch(logout());
         window.location.href = '/';
       })
       .catch((err) => console.error('Logout error:', err));
+  };
+
+  // Get display name for welcome message
+  const getDisplayName = () => {
+    if (!user) return 'Guest';
+    if (user.firstName) return user.firstName;
+    if (user.email) return user.email;
+    return 'Guest';
   };
 
   return (
@@ -95,11 +106,11 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
         }}
       >
         {/* .welcome-message */}
-        <Box sx={{ textAlign: 'center', color: WHITE, '& > *': { my: '10px' } }}>
+        <Box sx={{ textAlign: 'center', color: WHITE, width: '100%', '& > *': { my: '10px' } }}>
           <Typography variant='subtitle1' fontWeight='bold'>
-            {`Welcome, ${user?.email ?? 'Guest'}`}
+            {`Welcome, ${getDisplayName()}`}
           </Typography>
-          <Typography variant='body2'>Profile Progress</Typography>
+          <Typography variant='body2'>Analysis Progress</Typography>
           <ProgressBar completed={completed} />
         </Box>
       </Box>
