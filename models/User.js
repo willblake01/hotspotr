@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
           }
         },
         localpassword: {
-          type: DataTypes.STRING,
+          type: DataTypes.STRING(60), // Bcrypt hashes are exactly 60 characters
           allowNull: false
         }
       },
