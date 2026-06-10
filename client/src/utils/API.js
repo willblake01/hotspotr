@@ -1,5 +1,16 @@
 import axios from 'axios';
 
+export const getCurrentUser = () => {
+  return axios.get('/api/user/current')
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.error('Get current user error:', error.response?.data || error.message);
+      return null;
+    });
+}
+
 export const userSignUp = user => {
   return axios.post('/signup', user)
     .then((response) => {

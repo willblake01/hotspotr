@@ -26,6 +26,8 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [error, setError] = useState('');
     const dispatch = useDispatch();
@@ -34,10 +36,12 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
         const { name, value } = event.target;
         if (name === 'email') setEmail(value);
         if (name === 'password') setPassword(value);
+        if (name === 'firstName') setFirstName(value);
+        if (name === 'lastName') setLastName(value);
     };
 
     const handleSignup = async () => {
-        const res = await userSignUp({ email, password });
+        const res = await userSignUp({ firstName, lastName, email, password });
         dispatch(signup(res));
         if (res) setIsLoggedIn(true);
     };
@@ -65,6 +69,8 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
           }
           setEmail('');
           setPassword('');
+          setFirstName('');
+          setLastName('');
           toggleModal();
         } catch (err) {
           console.error(`${clickedButton} error:`, err);
@@ -116,6 +122,49 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
                 <Alert severity='error' onClose={() => setError('')}>
                   {error}
                 </Alert>
+            )}
+
+            {/* First Name and Last Name fields - only show for Sign Up (optional) */}
+            {clickedButton === 'Sign Up' && (
+              <>
+                <TextField
+                    label='First Name'
+                    type='text'
+                    name='firstName'
+                    value={firstName}
+                    onChange={handleInputChange}
+                    fullWidth
+                    variant='outlined'
+                    size='small'
+                    sx={{
+                        '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
+                        '& .MuiInputLabel-root': { color: BROWN },
+                        '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
+                        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: BROWN,
+                        },
+                    }}
+                />
+
+                <TextField
+                    label='Last Name'
+                    type='text'
+                    name='lastName'
+                    value={lastName}
+                    onChange={handleInputChange}
+                    fullWidth
+                    variant='outlined'
+                    size='small'
+                    sx={{
+                        '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
+                        '& .MuiInputLabel-root': { color: BROWN },
+                        '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
+                        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: BROWN,
+                        },
+                    }}
+                />
+              </>
             )}
 
             {/* TextField replaces <label> + <input> */}
