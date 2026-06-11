@@ -54,10 +54,24 @@ describe('Authentication Validation', function() {
     });
 
     it('should reject signup attempt when already logged in', function(done) {
-      // This test simulates the security fix - preventing credential changes via signup
-      // In a real scenario, req.user would be set by passport after login
-      // For now, we're just documenting the expected behavior
-      // A full integration test would require creating a user, logging in, then attempting signup
+      // Security Test: Prevent logged-in users from creating new accounts
+      // This prevents an attack vector where a logged-in user's session could be
+      // hijacked to create unauthorized accounts or change credentials.
+
+      // Expected behavior:
+      // 1. Server checks req.user before processing signup
+      // 2. If req.user exists, returns 403 with specific error message
+      // 3. Client shows the server's error message to the user
+      // 4. Landing page redirects authenticated users to dashboard
+
+      // To implement a full integration test:
+      // - Create a test user
+      // - Login to establish session
+      // - Attempt signup with session cookie
+      // - Verify 403 response with correct error message
+
+      // Note: This test is a placeholder for now. Full integration testing
+      // would require session management setup with supertest.
       done();
     });
   });
