@@ -13,7 +13,9 @@
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "dev": "concurrently \"nodemon server.js\" \"npm run client\"",
     "build": "cd client && npm install && npm run build",
-    "test": "mocha test/test.js --exit",
+    "test": "jest --forceExit --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "installDeps": "npm install && cd client && npm install",
     "lint": "eslint . --ext .js"
   },
@@ -22,14 +24,13 @@
   "devDependencies": {
     "concurrently": "^9.1.0",
     "eslint": "^9.18.0",
-    "mocha": "^11.0.1",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.9",
     "supertest": "^7.0.0"
   },
   "dependencies": {
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
-    "chai": "^5.1.2",
     "connect-ensure-login": "^0.1.1",
     "connect-flash": "^0.1.1",
     "connect-redis": "^9.0.0",
