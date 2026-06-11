@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useTheme } from '@mui/material'
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';

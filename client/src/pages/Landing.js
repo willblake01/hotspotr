@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Box, Typography, useTheme } from '@mui/material';
 import { Logo } from '../components/Logo.js';
 import { LargeButton } from '../components/LargeButton.js';

@@ -49,3 +49,6 @@ export const userLogOut = () => {
 export const sendTest = keyword => {
   return axios.post('/api/call', keyword);
 }
+
+export const getAuthStatus = () =>
+    axios.get('/auth/status').then((res) => res.data);

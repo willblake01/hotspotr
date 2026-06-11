@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { userSignUp, userLogIn } from '../utils/API';
 import { signup, login } from '../actions/actionCreators';
 import {
