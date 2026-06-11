@@ -30,6 +30,7 @@ export const Dashboard = () => {
   const [placesResults, setPlacesResults] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState({ lat: 30.27, lng: -97.74 }); // Default to Austin, TX
 
   // Fetch current user on mount and redirect if not authenticated
   useEffect(() => {
@@ -44,6 +45,24 @@ export const Dashboard = () => {
       setIsLoading(false);
     });
   }, [dispatch, navigate]);
+
+  // Get user's current geolocation
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.warn('Geolocation error:', error.message);
+          // Keep default location (Austin, TX) if geolocation fails
+        }
+      );
+    }
+  }, []);
 
   const handleClose = () => setOpen(false);
 
@@ -180,7 +199,7 @@ export const Dashboard = () => {
           }}>
             {/* .dashboard-map: top offset to clear the header */}
             <Box sx={{ position: 'relative', top: '11vh', width: '100%' }}>
-              <Maps mapClass='dashboard-map' placesResults={placesResults} />
+              <Maps mapClass='dashboard-map' center={userLocation} placesResults={placesResults} />
             </Box>
 
             {/* .column-2-footer */}

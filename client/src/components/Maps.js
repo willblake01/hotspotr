@@ -77,7 +77,7 @@ export const Maps = ({
           <Marker
               latitude={center.lat}
               longitude={center.lng}
-              onMouseEnter={() => handleMarkerEnter({ lat: center.lat, lng: center.lng, text: 'Austin, Texas' })}
+              onMouseEnter={() => handleMarkerEnter({ lat: center.lat, lng: center.lng, text: 'Your Location' })}
               onMouseLeave={handleMarkerLeave}
           />
 
