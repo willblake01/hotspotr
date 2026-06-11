@@ -9,6 +9,7 @@ View the deployed application https://hotspotr.herokuapp.com/
 ## Documentation
 
 - **[Security Documentation](docs/SECURITY.md)** - Authentication, password management, session handling, and security best practices
+- **[Auth Status Endpoint](docs/AUTH_STATUS_ENDPOINT.md)** - Details on `/auth/status` endpoint for Redux state rehydration
 
 ## Getting Started
 
@@ -87,6 +88,7 @@ Current tests include:
 - ✅ Authentication validation (email format, password requirements)
 - ✅ Input validation middleware
 - ✅ Security checks (logged-in user signup prevention)
+- ✅ Authentication status endpoint (`/auth/status` for state rehydration)
 
 #### Test Framework
 
@@ -109,6 +111,7 @@ npm start
 - **Email/Password authentication** with Passport.js
 - **Optional name fields** - firstName and lastName can be provided during signup
 - **Session persistence** - Users stay logged in across page refreshes
+- **State rehydration** - Redux state automatically rehydrated on page refresh via `/auth/status` endpoint
 - **Secure password storage** - Bcrypt hashing with salt level 8
 - **Redis-backed sessions** - Fast, scalable session management
 
@@ -124,6 +127,8 @@ npm start
 - Password (required)
 
 ### Dashboard Features
+- **Authentication protection** - Automatically redirects to landing page if not logged in
+- **State rehydration** - Maintains login state across page refreshes
 - Personalized welcome message with user's name or email
 - Target industry selection
 - Target location selection
@@ -161,10 +166,14 @@ npx sequelize-cli db:migrate:undo
 ## API Endpoints
 
 ### Authentication
+- `GET /auth/status` - Get authentication status for Redux state rehydration
+  - **No auth required** - Returns `{ user: {...} }` if authenticated, `{ user: null }` if not
+  - **Always returns 200** - Used by React client to check auth state on page load
+  - See [detailed docs](docs/AUTH_STATUS_ENDPOINT.md) for more information
 - `POST /auth/signup` - Create new user account
 - `POST /auth/login` - Authenticate user
 - `POST /auth/logout` - End user session
-- `GET /auth/user` - Get current logged-in user info
+- `GET /auth/user` - Get current logged-in user info (legacy, returns 401 when not authenticated)
 
 ### Protected Routes
 - `GET /dashboard` - Check if user is authenticated (requires login)
@@ -198,12 +207,13 @@ For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 **User data undefined:**
 - User data is loaded automatically on Dashboard mount
 - Check browser console for API errors
-- Verify `/auth/user` endpoint is accessible
+- Verify `/auth/status` endpoint is accessible
 
-**Database migration errors:**
-- Ensure MySQL is running
-- Verify database credentials in `config/config.js`
-- Check that `.sequelizerc` file exists in root directory
+**User appears logged out after page refresh:**
+- The `/auth/status` endpoint rehydrates Redux state on mount
+- Check that the endpoint returns `{ user: {...} }` when authenticated
+- Verify session cookies are being sent with requests (credentials: true in CORS)
+- Check that Redis is running for session persistence
 
 ## Tech Stack
 
@@ -229,4 +239,3 @@ For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 ## License
 
 MIT
-

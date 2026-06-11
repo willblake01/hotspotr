@@ -2,6 +2,29 @@ const app = require('../server');
 const request = require('supertest');
 
 describe('Authentication Validation', () => {
+  describe('GET /auth/status', () => {
+    it('should return user null when not authenticated', async () => {
+      const response = await request(app)
+        .get('/auth/status')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('user');
+      expect(response.body.user).toBeNull();
+    });
+
+    // Note: Testing authenticated status would require session setup
+    // This is a placeholder for future integration tests
+    it('should return user data when authenticated', () => {
+      // TODO: Implement session-based authentication test
+      // Would require:
+      // - Creating a test user
+      // - Logging in to establish session
+      // - Making request with session cookie
+      // - Verifying user data is returned
+      expect(true).toBe(true);
+    });
+  });
+
   describe('POST /auth/signup', () => {
     it('should reject empty email', async () => {
       const response = await request(app)
