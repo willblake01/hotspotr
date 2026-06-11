@@ -6,7 +6,25 @@ module.exports = (app, passport) => {
   // AUTH ROUTES ================================================================
   // =============================================================================
 
-  // Get current logged-in user
+  // Get authentication status (for Redux rehydration on page refresh)
+  app.get('/auth/status', (req, res) => {
+    if (req.user) {
+      // Return current user data for authenticated users
+      res.json({
+        user: {
+          id: req.user.id,
+          email: req.user.localemail,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName
+        }
+      });
+    } else {
+      // Return null user for unauthenticated requests
+      res.json({ user: null });
+    }
+  });
+
+  // Get current logged-in user (legacy endpoint, kept for backwards compatibility)
   app.get('/auth/user', (req, res) => {
     if (req.user) {
       // Only send safe user data (no password)

@@ -1,12 +1,13 @@
 import axios from 'axios';
 
 export const getCurrentUser = () => {
-  return axios.get('/auth/user')
+  return axios.get('/auth/status')
     .then((response) => {
-      return response.data;
+      // /auth/status returns { user: {...} } or { user: null }
+      return response.data.user;
     })
     .catch((error) => {
-      console.error('Get current user error:', error.response?.data || error.message);
+      console.error('Get auth status error:', error.response?.data || error.message);
       return null;
     });
 }
