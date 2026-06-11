@@ -68,9 +68,33 @@ This runs both the Express server (port 3001) and React client (port 3000) in de
 
 ### Testing
 
+The project uses **Jest** for testing with Supertest for API integration tests.
+
 ```bash
+# Run all tests
 npm test
+
+# Run tests in watch mode (interactive, reruns on file changes)
+npm run test:watch
+
+# Run tests with code coverage report
+npm run test:coverage
 ```
+
+#### Test Coverage
+
+Current tests include:
+- ✅ Authentication validation (email format, password requirements)
+- ✅ Input validation middleware
+- ✅ Security checks (logged-in user signup prevention)
+
+#### Test Framework
+
+- **Jest** - Modern testing framework with built-in assertions and coverage
+- **Supertest** - HTTP assertions for Express API testing
+- **async/await** syntax for cleaner test code
+
+See `jest.config.js` for test configuration.
 
 ### Production
 
@@ -137,14 +161,16 @@ npx sequelize-cli db:migrate:undo
 ## API Endpoints
 
 ### Authentication
-- `POST /signup` - Create new user account
-- `POST /login` - Authenticate user
-- `GET /logout` - End user session
-- `GET /api/user/current` - Get current logged-in user info
-- `GET /dashboard` - Check if user is authenticated
+- `POST /auth/signup` - Create new user account
+- `POST /auth/login` - Authenticate user
+- `POST /auth/logout` - End user session
+- `GET /auth/user` - Get current logged-in user info
+
+### Protected Routes
+- `GET /dashboard` - Check if user is authenticated (requires login)
 
 ### Application
-- `POST /call` - Google Places API search
+- `POST /api/call` - Google Places API search
 
 ## Security
 
@@ -172,7 +198,7 @@ For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 **User data undefined:**
 - User data is loaded automatically on Dashboard mount
 - Check browser console for API errors
-- Verify `/api/user/current` endpoint is accessible
+- Verify `/auth/user` endpoint is accessible
 
 **Database migration errors:**
 - Ensure MySQL is running
@@ -189,6 +215,8 @@ For detailed security information, see [docs/SECURITY.md](docs/SECURITY.md).
 - Passport.js (authentication)
 - Bcryptjs (password hashing)
 - Express-validator (input validation)
+- Jest (testing framework)
+- Supertest (API testing)
 
 ### Frontend
 - React
