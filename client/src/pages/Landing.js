@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography, useTheme } from '@mui/material';
 import { Logo } from '../components/Logo.js';
 import { LargeButton } from '../components/LargeButton.js';
 import { AuthModal } from '../components/AuthModal.js';
 import { Footer } from '../components/Footer.js';
 import { SocialMedia } from '../components/SocialMedia.js';
+import { getCurrentUser } from '../utils/API.js';
 
 const BG_IMAGE = 'https://res.cloudinary.com/willblake01/image/upload/v1538510016/hotspotr/landing-background.jpg';
 
 export const Landing = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const WHITE = theme.custom.white;
 
   const [activeModal, setActiveModal] = useState(false);
   const [clickedButton, setClickedButton] = useState('');
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    getCurrentUser().then((user) => {
+      if (user) {
+        navigate('/dashboard', { replace: true });
+      }
+    });
+  }, [navigate]);
 
   const toggleModal  = () => setActiveModal(prev => !prev);
   const toggleSignUp = () => { setActiveModal(true); setClickedButton('Sign Up'); };

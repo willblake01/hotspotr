@@ -74,10 +74,12 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
           toggleModal();
         } catch (err) {
           console.error(`${clickedButton} error:`, err);
+          // Show the specific error message from the server if available
+          const errorMessage = err.response?.data?.message || err.response?.data?.error;
           setError(
-              clickedButton === 'Sign Up'
+              errorMessage || (clickedButton === 'Sign Up'
                   ? 'Signup failed. Please try again.'
-                  : 'Login failed. Please check your credentials.'
+                  : 'Login failed. Please check your credentials.')
           );
         }
     };
