@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
-import { useTheme } from '@mui/material'
+import { Drawer, MenuItem, Box, Typography, useTheme } from '@mui/material'
+import { Footer } from '../components/Footer.js';
+import { IndustryForm, LocationForm, DemographicForm } from '../components/Forms';
+import { Logo2 } from '../components/Logo2.js';
+import { Maps } from '../components/Maps.js';
+import { SearchBar } from '../components/SearchBar.js';
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';
-import { Maps } from '../components/Maps.js';
-import { Drawer, MenuItem, Box, Typography } from '@mui/material';
-import { IndustryForm, LocationForm, DemographicForm } from '../components/Forms';
 import { sendTest, getCurrentUser } from '../utils/API';
 import { setUser } from '../actions/actionCreators';
-import { Logo2 } from '../components/Logo2.js';
-import { Footer } from '../components/Footer.js';
 
 const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/dashboard-background.jpg';
 
@@ -158,9 +158,10 @@ export const Dashboard = () => {
             {/* .dashboard-logo: width 4vw, border-radius 25px */}
             <Logo2 />
             {/* .main-title on dashboard */}
-            <Typography variant='h1' sx={{ fontSize: '6vw', color: WHITE, fontWeight: 'bold', ml: 2 }}>
+            <Typography variant='h1' sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }, color: WHITE, fontWeight: 'bold', ml: 2, mr: 4 }}>
               Hot Spotr
             </Typography>
+            <SearchBar />
           </Box>
 
           {/* .dashboard-grid-column-1 — sidebar column */}
