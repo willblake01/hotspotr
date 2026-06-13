@@ -35,19 +35,14 @@ module.exports = (passport, user) => {
             (req, email, password, done) => {
                 User.findOne({ where: { localemail: email } })
                     .then((user) => {
-                        if (!user) {
-                            return done(null, false, req.flash('loginMessage', 'Unknown user.'));
-                        }
-
-                        // bcryptjs.compareSync — same API as bcrypt-nodejs
-                        if (!bcrypt.compareSync(password, user.localpassword)) {
-                            return done(null, false, req.flash('loginMessage', 'Wrong password.'));
+                        if (!user || !user.validPassword(password)) {
+                            return done(null, false, { message: 'Incorrect email or password.' });
                         }
 
                         return done(null, user);
                     })
                     .catch((e) => {
-                        return done(null, false, req.flash('loginMessage', `${e.name}: ${e.message}`));
+                        return done(null, false, { message: `${e.name}: ${e.message}` });
                     });
             }
         )
@@ -69,7 +64,7 @@ module.exports = (passport, user) => {
                 User.findOne({ where: { localemail: email } })
                     .then((existingUser) => {
                         if (existingUser) {
-                            return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
+                            return done(null, false, { message: 'That email is already taken.' });
                         }
 
                         // Hash the password
@@ -89,10 +84,10 @@ module.exports = (passport, user) => {
                         return newUser
                             .save()
                             .then((savedUser) => done(null, savedUser))
-                            .catch((err) => done(null, false, req.flash('loginMessage', err.message)));
+                            .catch((err) => done(null, false, { message: err.message }));
                     })
                     .catch((e) => {
-                        return done(null, false, req.flash('loginMessage', `${e.name}: ${e.message}`));
+                        return done(null, false, { message: `${e.name}: ${e.message}` });
                     });
             }
         )

@@ -1,6 +1,5 @@
 const SIGNUP = 'SIGNUP';
 const LOGIN = 'LOGIN';
-const SET_USER = 'SET_USER';
 const LOGOUT = 'LOGOUT';
 
 // A reducer takes in two things:
@@ -11,7 +10,6 @@ export const profile = (state = null, action) => {
     switch (action.type) {
         case SIGNUP:
         case LOGIN:
-        case SET_USER:
             return {
                 ...state,
                 email: action.payload.email,

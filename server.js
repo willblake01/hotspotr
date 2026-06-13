@@ -4,7 +4,6 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const passport = require('passport');
-const flash = require('connect-flash');
 const morgan = require('morgan');
 const winston = require('winston');
 const expressWinston = require('express-winston');
@@ -76,7 +75,6 @@ require('./config/passport')(passport, db.User);
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
 
 // =========================================================================
 // Logging middleware

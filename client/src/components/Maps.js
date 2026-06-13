@@ -1,5 +1,6 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Map, { Source, Layer, Marker, Popup } from 'react-map-gl';
+import { useSelector } from 'react-redux';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -41,22 +42,49 @@ const heatmapLayer = {
 };
 
 export const Maps = ({
-  center = { lat: 30.27, lng: -97.74 },
-  zoom = 11,
   placesResults = []
 }) => {
   const theme = useTheme();
   const mapRef = useRef(null);
   const [popupInfo, setPopupInfo] = useState(null);
 
+  const location = useSelector((state) => state.location);
+
   const handleMarkerEnter = useCallback((marker) => setPopupInfo(marker), []);
   const handleMarkerLeave = useCallback(() => setPopupInfo(null), []);
 
-  const initialViewState = { latitude: center.lat, longitude: center.lng, zoom };
+  const initialViewState = {
+    latitude: location.lat ?? 30.27, // Default to Austin, TX if no location
+    longitude: location.lng ?? -97.740,
+    zoom: location.zoom ?? 11
+  };
 
   const geoData = toGeoJSON(placesResults[0] || []);
 
   const BROWN = theme.palette.secondary.main;
+
+  const isFirstMount = useRef(true);
+
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (!mapRef.current) return;
+
+    if (location.bbox) {
+      mapRef.current.fitBounds(
+          [[location.bbox[0], location.bbox[1]], [location.bbox[2], location.bbox[3]]],
+          { padding: 40, duration: 1500 }
+      );
+    } else {
+      mapRef.current.flyTo({
+        center: [location.lng, location.lat],
+        zoom: 13,
+        duration: 1500,
+      });
+    }
+  }, [location.lat, location.lng]);
 
   return (
       // mapClass and inline style replaced with MUI Box sx
@@ -75,9 +103,9 @@ export const Maps = ({
           )}
 
           <Marker
-              latitude={center.lat}
-              longitude={center.lng}
-              onMouseEnter={() => handleMarkerEnter({ lat: center.lat, lng: center.lng, text: 'Your Location' })}
+              latitude={location.lat}
+              longitude={location.lng}
+              onMouseEnter={() => handleMarkerEnter({ lat: location.lat, lng: location.lng, text: 'Your Location' })}
               onMouseLeave={handleMarkerLeave}
           />
 

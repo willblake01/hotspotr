@@ -6,7 +6,7 @@ import { LargeButton } from '../components/LargeButton.js';
 import { AuthModal } from '../components/AuthModal.js';
 import { Footer } from '../components/Footer.js';
 import { SocialMedia } from '../components/SocialMedia.js';
-import { getCurrentUser } from '../utils/API.js';
+import { getAuthStatus } from '../utils/API.js';
 
 const BG_IMAGE = 'https://res.cloudinary.com/willblake01/image/upload/v1538510016/hotspotr/landing-background.jpg';
 
@@ -21,7 +21,7 @@ export const Landing = () => {
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
-    getCurrentUser().then((user) => {
+    getAuthStatus().then((user) => {
       if (user) {
         navigate('/dashboard', { replace: true });
       }
