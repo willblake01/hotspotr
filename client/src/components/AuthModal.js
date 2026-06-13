@@ -84,6 +84,15 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
         }
     };
 
+    const textFieldSx = {
+        '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
+        '& .MuiInputLabel-root': { color: BROWN },
+        '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
+        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: BROWN,
+        },
+    };
+
     if (isLoggedIn) {
         return <Navigate to='/dashboard' replace />;
     }
@@ -138,14 +147,7 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
                     fullWidth
                     variant='outlined'
                     size='small'
-                    sx={{
-                        '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
-                        '& .MuiInputLabel-root': { color: BROWN },
-                        '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
-                        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: BROWN,
-                        },
-                    }}
+                    sx={ textFieldSx }
                 />
 
                 <TextField
@@ -157,14 +159,7 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
                     fullWidth
                     variant='outlined'
                     size='small'
-                    sx={{
-                        '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
-                        '& .MuiInputLabel-root': { color: BROWN },
-                        '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
-                        '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: BROWN,
-                        },
-                    }}
+                    sx={ textFieldSx }
                 />
               </>
             )}
@@ -172,21 +167,14 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
             {/* TextField replaces <label> + <input> */}
             <TextField
                 label='Email'
-                type='text'
+                type='email'
                 name='email'
                 value={email}
                 onChange={handleInputChange}
                 fullWidth
                 variant='outlined'
                 size='small'
-                sx={{
-                    '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
-                    '& .MuiInputLabel-root': { color: BROWN },
-                    '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
-                    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: BROWN,
-                    },
-                }}
+                sx={ textFieldSx }
             />
 
             <TextField
@@ -198,14 +186,7 @@ export const AuthModal = ({ clickedButton, activeModal, toggleModal }) => {
                 fullWidth
                 variant='outlined'
                 size='small'
-                sx={{
-                    '& .MuiOutlinedInput-root': { bgcolor: WHITE, borderRadius: '8px' },
-                    '& .MuiInputLabel-root': { color: BROWN },
-                    '& .MuiInputLabel-root.Mui-focused': { color: BROWN },
-                    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: BROWN,
-                    },
-                }}
+                sx={ textFieldSx }
             />
           </DialogContent>
 

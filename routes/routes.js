@@ -1,4 +1,3 @@
-const axios = require('axios');
 const { authValidationRules, signupValidationRules, validateRequest } = require('../middleware/validation');
 
 module.exports = (app, passport) => {
@@ -9,8 +8,9 @@ module.exports = (app, passport) => {
   // Get authentication status (for Redux rehydration on page refresh)
   app.get('/auth/status', (req, res) => {
     if (req.user) {
+
       // Return current user data for authenticated users
-      res.json({
+      res.status(200).json({
         user: {
           id: req.user.id,
           email: req.user.localemail,
@@ -20,22 +20,7 @@ module.exports = (app, passport) => {
       });
     } else {
       // Return null user for unauthenticated requests
-      res.json({ user: null });
-    }
-  });
-
-  // Get current logged-in user (legacy endpoint, kept for backwards compatibility)
-  app.get('/auth/user', (req, res) => {
-    if (req.user) {
-      // Only send safe user data (no password)
-      res.json({
-        id: req.user.id,
-        email: req.user.localemail,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName
-      });
-    } else {
-      res.status(401).json({ error: 'Not authenticated' });
+      res.status(200).json({ user: null });
     }
   });
 
@@ -53,7 +38,14 @@ module.exports = (app, passport) => {
         if (err) {
           return res.status(500).json({ error: 'Session error', details: err.message });
         }
-        return res.redirect('/dashboard');
+        return res.status(200).json({
+          user: {
+            id: user.id,
+            email: user.localemail,
+            firstName: user.firstName,
+            lastName: user.lastName
+          },
+        });
       });
     })(req, res, next);
   });
@@ -80,7 +72,14 @@ module.exports = (app, passport) => {
         if (err) {
           return res.status(500).json({ error: 'Session error', details: err.message });
         }
-        return res.redirect('/dashboard');
+        return res.status(201).json({
+          user: {
+            id: user.id,
+            email: user.localemail,
+            firstName: user.firstName,
+            lastName: user.lastName
+          },
+        });
       });
     })(req, res, next);
   });
@@ -89,36 +88,11 @@ module.exports = (app, passport) => {
   app.post('/auth/logout', (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
-      res.json({ success: true, message: 'Logged out successfully' });
+      req.session.destroy((destroyErr) => {
+        if (destroyErr) console.error('Session destroy error:', destroyErr);
+        res.clearCookie('connect.sid');
+        res.json({ success: true, message: 'Logged out successfully' });
+      });
     });
   });
-
-  // =============================================================================
-  // PROTECTED ROUTES ===========================================================
-  // =============================================================================
-
-  // PROFILE SECTION =========================
-  app.get('/dashboard', isLoggedIn, (req, res) => {
-    req.user ? res.send(true) : res.send(false)
-  });
-
-  // =============================================================================
-  // API ROUTES =================================================================
-  // =============================================================================
-
-  app.post('/api/call', (req, res) => {
-    const keyword = req.body.keyword;
-    axios
-      .get(
-        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=30.2672,-97.7431&radius=50000&keyword=${keyword}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`
-      )
-      .then(result => {
-        res.json(result.data);
-      });
-  });
 };
-
-// route middleware to ensure user is logged in
-const isLoggedIn = (req, res, next) => {
-  req.isAuthenticated() ? next() : res.redirect('/')
-}

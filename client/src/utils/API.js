@@ -1,60 +1,27 @@
 import axios from 'axios';
 
-export const getCurrentUser = () => {
-  return axios.get('/auth/status')
-    .then((response) => {
+const api = axios.create({
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001',
+    withCredentials: true,
+});
 
-      // /auth/status returns { user: {...} } or { user: null }
-      return response.data.user;
-    })
-    .catch((error) => {
-      console.error('Get auth status error:', error.response?.data || error.message);
-      return null;
-    });
-}
-
-export const userSignUp = user => {
-  return axios.post('/auth/signup', user)
-    .then((_response) => {
-
-      // Return safe user data from server (no password)
-      return {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      };
-    })
+export const userSignUp = user => api.post('/auth/signup', user)
+    .then((response) => response.data.user)
     .catch((error) => {
       console.error('Signup error:', error.response?.data || error.message);
       throw error;
     });
-}
 
-export const userLogIn = user => {
-  return axios.post('/auth/login', user)
-    .then((_response) => {
-
-      // Return only email (no password) for security
-      return {
-        email: user.email
-      };
-    })
+export const userLogIn = user => api.post('/auth/login', user)
+    .then((response) => response.data.user)
     .catch((error) => {
       console.error('Login error:', error.response?.data || error.message);
       throw error;
     });
-}
 
-export const userLogOut = () => {
-  return axios.post('/auth/logout');
-}
+export const userLogOut = () => api.post('/auth/logout');
 
-export const sendTest = keyword => {
-  return axios.post('/api/call', keyword);
-}
-
-export const getAuthStatus = () =>
-    axios.get('/auth/status').then((res) => res.data);
+export const getAuthStatus = () => api.get('/auth/status').then((res) => res.data);
 
 export const geocodeLocation = async (query) => {
   const token = process.env.REACT_APP_MAPBOX_TOKEN;

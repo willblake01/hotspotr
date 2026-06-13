@@ -9,8 +9,9 @@ import { Maps } from '../components/Maps.js';
 import { SearchBar } from '../components/SearchBar.js';
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';
-import { sendTest, getCurrentUser } from '../utils/API';
-import { setUser } from '../actions/actionCreators';
+import { getAuthStatus } from '../utils/API';
+import { login } from '../actions/actionCreators';
+import { setLocation } from '../store/locationSlice';
 
 const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/dashboard-background.jpg';
 
@@ -25,18 +26,17 @@ export const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const [whichForm, setWhichForm] = useState('');
   const [industry, setIndustry] = useState('');
-  const [location, setLocation] = useState('');
+  const [locationInput, setLocationInput] = useState('');
   const [demographic, setDemographic] = useState('');
   const [placesResults, setPlacesResults] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState({ lat: 30.27, lng: -97.74 }); // Default to Austin, TX
 
   // Fetch current user on mount and redirect if not authenticated
   useEffect(() => {
-    getCurrentUser().then((user) => {
+    getAuthStatus().then((user) => {
       if (user) {
-        dispatch(setUser(user));
+        dispatch(login(user));
         setIsAuthenticated(true);
       } else {
         // User is not authenticated, redirect to landing page
@@ -51,10 +51,12 @@ export const Dashboard = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
+          dispatch(setLocation({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                placeName: 'Your Location',
+                query: 'current-location',
+          }));
         },
         (error) => {
           console.warn('Geolocation error:', error.message);
@@ -75,7 +77,7 @@ export const Dashboard = () => {
     const { name, value } = event.target;
     switch (name) {
       case 'industry':   setIndustry(value);    break;
-      case 'location':   setLocation(value);    break;
+      case 'location':   setLocationInput(value);    break;
       case 'demographic': setDemographic(value); break;
       default: break;
     }
@@ -83,12 +85,6 @@ export const Dashboard = () => {
 
   const handleSubmit = () => {
     if (whichForm === 'industry') {
-      sendTest({ keyword: industry })
-          .then((res) => {
-            const locations = res.data.results.map((i) => i.geometry.location);
-            setPlacesResults((prev) => [...prev, locations]);
-          })
-          .catch((err) => console.error('sendTest error:', err));
       handleClose();
     }
   };
@@ -200,7 +196,7 @@ export const Dashboard = () => {
           }}>
             {/* .dashboard-map: top offset to clear the header */}
             <Box sx={{ position: 'relative', top: '11vh', width: '100%' }}>
-              <Maps mapClass='dashboard-map' center={userLocation} placesResults={placesResults} />
+              <Maps placesResults={placesResults} />
             </Box>
 
             {/* .column-2-footer */}
