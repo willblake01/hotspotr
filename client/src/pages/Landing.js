@@ -18,19 +18,28 @@ export const Landing = () => {
 
   const [activeModal, setActiveModal] = useState(false);
   const [clickedButton, setClickedButton] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
-    getAuthStatus().then((user) => {
-      if (user) {
+    getAuthStatus().then((response) => {
+      if (response?.user) {
         navigate('/dashboard', { replace: true });
       }
+      setIsCheckingAuth(false);
+    }).catch(() => {
+      setIsCheckingAuth(false);
     });
   }, [navigate]);
 
   const toggleModal  = () => setActiveModal(prev => !prev);
   const toggleSignUp = () => { setActiveModal(true); setClickedButton('Sign Up'); };
   const toggleLogIn  = () => { setActiveModal(true); setClickedButton('Login'); };
+
+  // Don't render until auth check completes to prevent redirect flash
+  if (isCheckingAuth) {
+    return null;
+  }
 
   return (
       // .landing-cont — full viewport container with blurred background via ::before pseudo

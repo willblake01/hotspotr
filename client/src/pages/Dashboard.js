@@ -34,14 +34,18 @@ export const Dashboard = () => {
 
   // Fetch current user on mount and redirect if not authenticated
   useEffect(() => {
-    getAuthStatus().then((user) => {
-      if (user) {
-        dispatch(login(user));
+    getAuthStatus().then((response) => {
+      if (response?.user) {
+        dispatch(login(response.user));
         setIsAuthenticated(true);
       } else {
         // User is not authenticated, redirect to landing page
         navigate('/', { replace: true });
       }
+      setIsLoading(false);
+    }).catch(() => {
+      // On error, redirect to landing page
+      navigate('/', { replace: true });
       setIsLoading(false);
     });
   }, [dispatch, navigate]);
@@ -64,7 +68,7 @@ export const Dashboard = () => {
         }
       );
     }
-  }, []);
+  }, [dispatch]);
 
   const handleClose = () => setOpen(false);
 
@@ -172,6 +176,7 @@ export const Dashboard = () => {
                 handleToggleLocation={handleToggleLocation}
                 handleToggleDemographic={handleToggleDemographic}
                 handleToggleHeatmap={handleToggleHeatmap}
+                navigate={navigate}
             />
 
             <Drawer open={open} onClose={handleClose}>
