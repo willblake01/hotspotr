@@ -10,7 +10,7 @@ import { ProgressBar } from './ProgressBar';
 import { userLogOut } from '../utils/API';
 import { logout } from '../actions/actionCreators';
 
-export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap }) => {
+export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap, navigate }) => {
     const theme = useTheme();
 
     const ORANGE = theme.palette.primary.main;
@@ -66,9 +66,21 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
     userLogOut()
       .then(() => {
         dispatch(logout());
-        window.location.href = '/';
+        if (navigate) {
+          navigate('/', { replace: true });
+        } else {
+          window.location.href = '/';
+        }
       })
-      .catch((err) => console.error('Logout error:', err));
+      .catch((err) => {
+        console.error('Logout error:', err);
+        // On error, still try to navigate away
+        if (navigate) {
+          navigate('/', { replace: true });
+        } else {
+          window.location.href = '/';
+        }
+      });
   };
 
   // Get display name for welcome message
