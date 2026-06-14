@@ -4,7 +4,7 @@ import { Drawer, MenuItem, Box, Typography, useTheme } from '@mui/material';
 import { Footer } from '../components/Footer.js';
 import { IndustryForm } from '../components/IndustryForm.js';
 import { LocationForm } from '../components/LocationForm.js';
-import { DemographicForm } from '../components/DemographicForm.js';
+import { DemographicsForm } from '../components/DemographicsForm.js';
 import { Logo2 } from '../components/Logo2.js';
 import { Maps } from '../components/Maps.js';
 import { SearchBar } from '../components/SearchBar.js';
@@ -13,7 +13,7 @@ import { SocialMedia } from '../components/SocialMedia.js';
 import { getSearchHistory } from '../utils/API';
 import { setHistory, setLocation } from '../store/locationSlice';
 
-// IndustryForm, LocationForm, DemographicForm now manage their own state
+// IndustryForm, LocationForm, DemographicsForm now manage their own state
 // via Redux filtersSlice — no handleInputChange or handleSubmit needed here
 
 const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/dashboard-background.jpg';
@@ -68,7 +68,7 @@ export const Dashboard = () => {
       case 'location':
         return <LocationForm onSubmit={handleClose} />;
       case 'demographic':
-        return <DemographicForm onSubmit={handleClose} />;
+        return <DemographicsForm onSubmit={handleClose} />;
       default:
         return null;
     }
@@ -148,6 +148,7 @@ export const Dashboard = () => {
                   sx: {
                     bgcolor: WHITE,
                     color: BROWN,
+                    width: '374px',  // match sidebar width
                   }
                 }}
             >

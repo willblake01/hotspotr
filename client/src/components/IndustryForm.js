@@ -31,8 +31,19 @@ export const IndustryForm = ({ handleSubmit }) => {
     };
 
     return (
-        <Box sx={{ p: '20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant='h6' sx={{ color: BROWN, fontWeight: 'bold' }}>
+        <Box sx={{
+            p: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+        }}>
+            <Typography
+                variant='h6'
+                sx={{
+                    color: BROWN,
+                    fontWeight: 'bold'
+                }}
+            >
                 What industry are you competing in?
             </Typography>
 
