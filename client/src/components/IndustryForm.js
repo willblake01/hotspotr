@@ -1,35 +1,76 @@
-import React from 'react';
-import { Box, Typography, TextField, Button } from '@mui/material';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    Box, Typography, Select, MenuItem,
+    FormControl, InputLabel, Button
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { INDUSTRY_OPTIONS } from '../config/industryOptions';
+import { setIndustry } from '../store/filtersSlice';
 
-export const IndustryForm = ({ handleInputChange, handleSubmit }) => {
+export const IndustryForm = ({ handleSubmit }) => {
     const theme = useTheme();
+    const dispatch = useDispatch();
+    const selectedIndustry = useSelector((state) => state.filters.industry);
+    const [localSelection, setLocalSelection] = useState(selectedIndustry || '');
 
     const ORANGE = theme.palette.primary.main;
     const BROWN = theme.palette.secondary.main;
     const WHITE = theme.custom.white;
 
+    const handleChange = (event) => {
+        setLocalSelection(event.target.value);
+    };
+
+    const handleApply = () => {
+        const option = INDUSTRY_OPTIONS.find(o => o.label === localSelection);
+        if (option) {
+            dispatch(setIndustry({ label: option.label, osmTag: option.osmTag }));
+            handleSubmit();
+        }
+    };
+
     return (
-        <Box sx={{ p: '20px', bgcolor: WHITE, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ p: '20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant='h6' sx={{ color: BROWN, fontWeight: 'bold' }}>
                 What industry are you competing in?
             </Typography>
-            <TextField
-                type='text'
-                name='industry'
-                placeholder='Ex. Real Estate'
-                onChange={handleInputChange}
-                fullWidth
-                size='small'
-                variant='outlined'
-            />
+
+            <FormControl fullWidth size='small'>
+                <InputLabel sx={{ color: BROWN }}>Select Industry</InputLabel>
+                <Select
+                    value={localSelection}
+                    onChange={handleChange}
+                    label='Select Industry'
+                    sx={{
+                        bgcolor: WHITE,
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: BROWN },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: BROWN },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: BROWN },
+                    }}
+                    variant={'outlined'}>
+                    {INDUSTRY_OPTIONS.map(({ label }) => (
+                        <MenuItem key={label} value={label}>
+                            {label}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
             <Button
-                type='submit'
+                onClick={handleApply}
+                disabled={!localSelection}
                 variant='contained'
-                onClick={handleSubmit}
-                sx={{ borderRadius: '25px', textTransform: 'none', bgcolor: ORANGE }}
+                sx={{
+                    bgcolor: ORANGE,
+                    color: WHITE,
+                    borderRadius: '25px',
+                    textTransform: 'none',
+                    fontWeight: 'bold',
+                    '&:hover': { bgcolor: WHITE, color: BROWN },
+                }}
             >
-                Submit
+                Apply
             </Button>
         </Box>
     );

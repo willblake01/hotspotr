@@ -1,0 +1,17 @@
+export const INDUSTRY_OPTIONS = [
+    { label: 'Restaurant',      osmTag: 'amenity=restaurant' },
+    { label: 'Coffee Shop',     osmTag: 'amenity=cafe' },
+    { label: 'Retail',          osmTag: 'shop=*' },
+    { label: 'Grocery',         osmTag: 'shop=supermarket' },
+    { label: 'Gym / Fitness',   osmTag: 'leisure=fitness_centre' },
+    { label: 'Healthcare',      osmTag: 'amenity=clinic' },
+    { label: 'Pharmacy',        osmTag: 'amenity=pharmacy' },
+    { label: 'Bar / Nightlife', osmTag: 'amenity=bar' },
+    { label: 'Hotel',           osmTag: 'tourism=hotel' },
+    { label: 'Real Estate',     osmTag: 'office=estate_agent' },
+    { label: 'Bank / Finance',  osmTag: 'amenity=bank' },
+    { label: 'Salon / Beauty',  osmTag: 'shop=hairdresser' },
+    { label: 'Auto Services',   osmTag: 'shop=car_repair' },
+    { label: 'Education',       osmTag: 'amenity=school' },
+    { label: 'Childcare',       osmTag: 'amenity=childcare' },
+];
