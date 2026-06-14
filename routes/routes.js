@@ -95,4 +95,49 @@ module.exports = (app, passport) => {
       });
     });
   });
+
+  // =============================================================================
+  // API MIDDLEWARE =============================================================
+  // =============================================================================
+
+  const requireAuth = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+  };
+
+  app.use('/api', requireAuth);
+
+  // =============================================================================
+  // SEARCH HISTORY ROUTES ======================================================
+  // =============================================================================
+
+  app.post('/api/search/history', (req, res) => {
+    const { query, lat, lng, placeName, bbox } = req.body;
+
+    // Skip saving geolocation entries
+    if (query === 'current-location') {
+      return res.status(200).json({ history: req.session.searchHistory || [] });
+    }
+
+    if (!req.session.searchHistory) req.session.searchHistory = [];
+
+    // Prepend new entry, cap at 10
+    req.session.searchHistory = [
+      { query, lat, lng, placeName, bbox, timestamp: new Date().toISOString() },
+      ...req.session.searchHistory
+    ].slice(0, 10);
+
+    res.status(200).json({ history: req.session.searchHistory });
+  });
+
+  app.get('/api/search/history', (req, res) => {
+    res.status(200).json({ history: req.session.searchHistory || [] });
+  });
+
+  app.delete('/api/search/history', (req, res) => {
+    req.session.searchHistory = [];
+    res.status(200).json({ history: [] });
+  });
 };

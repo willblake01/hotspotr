@@ -23,8 +23,11 @@ const locationSlice = createSlice({
                 ...state.history
             ].slice(0, 10);
         },
+        setHistory: (state, action) => {
+            state.history = action.payload;
+        },
     },
 });
 
-export const { setLocation } = locationSlice.actions;
+export const { setLocation, setHistory } = locationSlice.actions;
 export default locationSlice.reducer;
