@@ -1,3 +1,4 @@
+const axios = require('axios');
 const { authValidationRules, signupValidationRules, validateRequest } = require('../middleware/validation');
 
 module.exports = (app, passport) => {
@@ -139,5 +140,35 @@ module.exports = (app, passport) => {
   app.delete('/api/search/history', (req, res) => {
     req.session.searchHistory = [];
     res.status(200).json({ history: [] });
+  });
+
+  // =============================================================================
+  // OVERPASS API ROUTE =========================================================
+  // =============================================================================
+
+  app.get('/api/overpass', requireAuth, async (req, res) => {
+    const { lat, lng, osmTag } = req.query;
+    const radius = 5000; // 5km radius
+
+    // Parse osmTag into key and value — e.g. 'amenity=restaurant'
+    const [key, value] = osmTag.split('=');
+    const tagFilter = value === '*'
+      ? `["${key}"]`
+      : `["${key}"="${value}"]`;
+
+    const query = `
+    [out:json];
+    (
+      node${tagFilter}(around:${radius},${lat},${lng});
+      way${tagFilter}(around:${radius},${lat},${lng});
+    );
+    out center;
+  `;
+
+    const result = await axios.post(
+      'https://overpass-api.de/api/interpreter',
+      `data=${encodeURIComponent(query)}`
+    );
+    res.json(result.data);
   });
 };

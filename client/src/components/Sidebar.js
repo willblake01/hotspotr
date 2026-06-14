@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { Box, Button, Divider, Stack, Typography, useTheme } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -10,8 +11,9 @@ import { ProgressBar } from './ProgressBar';
 import { userLogOut } from '../utils/API';
 import { logout } from '../actions/actionCreators';
 
-export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap, navigate }) => {
+export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
 
     const ORANGE = theme.palette.primary.main;
     const BROWN  = theme.palette.secondary.main;
@@ -62,26 +64,17 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
 
   const handlers = { handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap };
 
-  const handleLogOut = () => {
-    userLogOut()
-      .then(() => {
-        dispatch(logout());
-        if (navigate) {
-          navigate('/', { replace: true });
-        } else {
-          window.location.href = '/';
-        }
-      })
-      .catch((err) => {
-        console.error('Logout error:', err);
-        // On error, still try to navigate away
-        if (navigate) {
-          navigate('/', { replace: true });
-        } else {
-          window.location.href = '/';
-        }
-      });
-  };
+    const handleLogOut = () => {
+        userLogOut()
+            .then(() => {
+                dispatch(logout());
+                navigate('/', { replace: true });
+            })
+            .catch((err) => {
+                console.error('Logout error:', err);
+                navigate('/', { replace: true });
+            });
+    };
 
   // Get display name for welcome message
   const getDisplayName = () => {
