@@ -149,7 +149,6 @@ export const Dashboard = () => {
             p: '20px',
             maxHeight: '120px',
             bgcolor: BROWN,
-            opacity: 0.9,
           }}>
             {/* .dashboard-logo: width 4vw, border-radius 25px */}
             <Logo2 />
