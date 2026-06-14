@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, CircularProgress, IconButton, List, ListItem, ListItemButton, ListItemText, Paper, TextField } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
 import SearchIcon from '@mui/icons-material/Search';
-import { geocodeLocation } from '../utils/API';
+import { geocodeLocation, saveSearchHistory } from '../utils/API';
 import { setLocation } from '../store/locationSlice';
 
 export const SearchBar = () => {
@@ -23,6 +23,7 @@ export const SearchBar = () => {
         try {
             const result = await geocodeLocation(query);
             dispatch(setLocation(result));
+            await saveSearchHistory(result);  // persist to Redis session
             setQuery('');
         } catch (err) {
             setError(err.message || 'Search unavailable. Please try again.');

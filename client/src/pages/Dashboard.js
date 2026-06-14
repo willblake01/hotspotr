@@ -9,9 +9,9 @@ import { Maps } from '../components/Maps.js';
 import { SearchBar } from '../components/SearchBar.js';
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';
-import { getAuthStatus } from '../utils/API';
+import { getAuthStatus, getSearchHistory } from '../utils/API';
 import { login } from '../actions/actionCreators';
-import { setLocation } from '../store/locationSlice';
+import { setLocation, setHistory } from '../store/locationSlice';
 
 const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/dashboard-background.jpg';
 
@@ -68,6 +68,13 @@ export const Dashboard = () => {
         }
       );
     }
+  }, [dispatch]);
+
+  // Fetch search history on mount
+  useEffect(() => {
+    getSearchHistory().then((history) => {
+      if (history.length > 0) dispatch(setHistory(history));
+    });
   }, [dispatch]);
 
   const handleClose = () => setOpen(false);

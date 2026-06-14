@@ -41,3 +41,12 @@ export const geocodeLocation = async (query) => {
 
   return { lat, lng, bbox, placeName, query };
 };
+
+export const saveSearchHistory = (entry) =>
+    api.post('/api/search/history', entry).then(res => res.data);
+
+export const getSearchHistory = () =>
+    api.get('/api/search/history').then(res => res.data.history);
+
+export const clearSearchHistory = () =>
+    api.delete('/api/search/history').then(res => res.data);
