@@ -28,6 +28,7 @@ export const Dashboard = () => {
 
   const [open, setOpen] = useState(false);
   const [whichForm, setWhichForm] = useState('');
+  const [showCompetitors, setShowCompetitors] = useState(false);
 
   // Geolocation — center map on user's current position on mount
   useEffect(() => {
@@ -56,9 +57,9 @@ export const Dashboard = () => {
   const handleClose = () => setOpen(false);
 
   const handleToggleIndustry    = () => { setOpen(!open); setWhichForm('industry'); };
-  const handleToggleLocation    = () => { setOpen(!open); setWhichForm('location'); };
-  const handleToggleDemographic = () => { setOpen(!open); setWhichForm('demographic'); };
-  const handleToggleHeatmap     = () => console.log('Yolo!');
+  const handleToggleRadius    = () => { setOpen(!open); setWhichForm('location'); };
+  const handleToggleDemographics = () => { setOpen(!open); setWhichForm('demographic'); };
+  const handleToggleCompetitors = () => setShowCompetitors(prev => !prev);
 
   // Each form is self-contained — dispatches to filtersSlice directly
   // onSubmit is passed so forms can close the Drawer after submitting
@@ -137,9 +138,9 @@ export const Dashboard = () => {
           }}>
             <Sidebar
                 handleToggleIndustry={handleToggleIndustry}
-                handleToggleLocation={handleToggleLocation}
-                handleToggleDemographic={handleToggleDemographic}
-                handleToggleHeatmap={handleToggleHeatmap}
+                handleToggleRadius={handleToggleRadius}
+                handleToggleDemographics={handleToggleDemographics}
+                handleToggleCompetitors={handleToggleCompetitors}
             />
 
             <Drawer
@@ -187,7 +188,7 @@ export const Dashboard = () => {
               top: '11vh',
               width: '100%'
             }}>
-              <Maps />
+              <Maps showCompetitors={showCompetitors} />
             </Box>
             <Box sx={{
               display: 'flex',

@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { Box, Button, Divider, Stack, Typography, useTheme } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupsIcon from '@mui/icons-material/Groups';
-import MapIcon from '@mui/icons-material/Map';
+import TuneIcon from '@mui/icons-material/Tune';
 import LogoutIcon from '@mui/icons-material/Logout';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import { ProgressBar } from './ProgressBar';
 import { userLogOut } from '../utils/API';
 import { logout } from '../actions/actionCreators';
 
-export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap }) => {
+export const Sidebar = ({ handleToggleIndustry, handleToggleRadius, handleToggleDemographics, handleToggleCompetitors }) => {
     const theme = useTheme();
     const navigate = useNavigate();
 
@@ -20,10 +20,10 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
     const WHITE  = theme.custom.white;
 
     const navItems = [
-        { label: 'TARGET INDUSTRY',     icon: <BusinessIcon />,   handler: 'handleToggleIndustry'    },
-        { label: 'LOCATION RADIUS',     icon: <LocationOnIcon />, handler: 'handleToggleLocation'    },
-        { label: 'TARGET DEMOGRAPHICS', icon: <GroupsIcon />,     handler: 'handleToggleDemographic' },
-        { label: 'COMPETITION HEATMAP', icon: <MapIcon />,        handler: 'handleToggleHeatmap'     },
+        { label: 'TARGET INDUSTRY', icon: <BusinessIcon />, handler: 'handleToggleIndustry' },
+        { label: 'LOCATION RADIUS', icon: <TuneIcon />, handler: 'handleToggleRadius' },
+        { label: 'TARGET DEMOGRAPHICS', icon: <GroupsIcon />, handler: 'handleToggleDemographics' },
+        { label: 'SHOW COMPETITORS', icon: <StorefrontIcon />, handler: 'handleToggleCompetitors' },
     ];
 
     // Shared button styles — mirrors .sidebar-link and .sidebar-link:hover
@@ -62,7 +62,7 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  const handlers = { handleToggleIndustry, handleToggleLocation, handleToggleDemographic, handleToggleHeatmap };
+  const handlers = { handleToggleIndustry, handleToggleRadius, handleToggleDemographics, handleToggleCompetitors };
 
     const handleLogOut = () => {
         userLogOut()
