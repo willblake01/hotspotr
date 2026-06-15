@@ -4,10 +4,10 @@ import { api } from '../utils/API';
 
 export const fetchLocationData = createAsyncThunk(
     'heatmap/fetchLocationData',
-    async ({ osmTag: passedOsmTag } = {}, { getState, rejectWithValue }) => {
+    async ({ osmTag: passedOsmTag, radius: passedRadius } = {}, { getState, rejectWithValue }) => {
         const state = getState();
         const { lat, lng } = state.location;
-        const { industry, demographics } = state.filters;
+        const { industry, demographics, radius } = state.filters;
 
         if (!lat || !lng) {
             return rejectWithValue('No location selected.');
@@ -16,6 +16,7 @@ export const fetchLocationData = createAsyncThunk(
         // Use passed osmTag (from IndustryForm) or fall back to Redux state
         // Direct pass avoids timing issue where state hasn't updated yet
         const resolvedOsmTag = passedOsmTag || industry.osmTag;
+        const resolvedRadius = passedRadius || radius || 5;
 
         if (!resolvedOsmTag) {
             return rejectWithValue('No industry selected.');
@@ -24,7 +25,7 @@ export const fetchLocationData = createAsyncThunk(
         try {
             const [overpassResponse, censusResponse, blsResponse] = await Promise.all([
                 api.get('/api/overpass', {
-                    params: { lat, lng, osmTag: resolvedOsmTag }
+                    params: { lat, lng, osmTag: resolvedOsmTag, radius: resolvedRadius * 1000 }, // convert km to meters
                 }),
                 api.get('/api/census', {
                     params: { lat, lng, filters: JSON.stringify(demographics) }

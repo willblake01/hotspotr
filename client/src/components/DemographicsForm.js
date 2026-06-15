@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-    Box, Typography, FormGroup, FormControlLabel,
+    Alert, Box, Typography, FormGroup, FormControlLabel,
     Checkbox, Button, Divider
 } from '@mui/material';
 import { toggleDemographicFilter } from "../store/filtersSlice";
@@ -62,15 +62,16 @@ export const DemographicsForm = ({ onSubmit }) => {
     const hasSelection = Object.values(selectedFilters).some(g => g.length > 0);
 
     return (
-        <Box sx={{ p: '20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {error && (
-                <Typography
-                    variant='body2'
-                    sx={{ color: 'error.main', fontSize: '0.875rem' }}
-                >
-                    {error}
-                </Typography>
-            )}
+        <Box
+            sx={{
+                p: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                textAlign: 'center'
+            }}
+        >
+            {error && <Alert severity='error' onClose={() => setError('')}>{error}</Alert>}
 
             {Object.entries(DEMOGRAPHIC_FILTERS).map(([group, options]) => (
                 <Box key={group}>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-    Box, Typography, Select, MenuItem,
+    Alert, Box, Typography, Select, MenuItem,
     FormControl, InputLabel, Button
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -47,6 +47,7 @@ export const IndustryForm = ({ onSubmit }) => {
             flexDirection: 'column',
             gap: 2
         }}>
+            {error && <Alert severity='error' onClose={() => setError('')}>{error}</Alert>}
             <Typography
                 variant='h6'
                 sx={{
@@ -56,16 +57,6 @@ export const IndustryForm = ({ onSubmit }) => {
             >
                 What industry are you competing in?
             </Typography>
-
-            {error && (
-                <Typography
-                    variant='body2'
-                    sx={{ color: 'error.main', fontSize: '0.875rem' }}
-                >
-                    {error}
-                </Typography>
-            )}
-
             <FormControl fullWidth size='small'>
                 <InputLabel sx={{ color: BROWN }}>Select Industry</InputLabel>
                 <Select
