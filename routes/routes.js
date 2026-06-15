@@ -215,8 +215,7 @@ module.exports = (app, passport) => {
   ];
 
   app.get('/api/overpass', requireAuth, async (req, res) => {
-    const { lat, lng, osmTag } = req.query;
-    const radius = 5000;
+    const { lat, lng, osmTag, radius = 5000 } = req.query;
     const [key, value] = osmTag.split('=');
     const tagFilter = value === '*' ? `["${key}"]` : `["${key}"="${value}"]`;
 

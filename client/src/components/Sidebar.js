@@ -21,7 +21,7 @@ export const Sidebar = ({ handleToggleIndustry, handleToggleLocation, handleTogg
 
     const navItems = [
         { label: 'TARGET INDUSTRY',     icon: <BusinessIcon />,   handler: 'handleToggleIndustry'    },
-        { label: 'TARGET LOCATION',     icon: <LocationOnIcon />, handler: 'handleToggleLocation'    },
+        { label: 'LOCATION RADIUS',     icon: <LocationOnIcon />, handler: 'handleToggleLocation'    },
         { label: 'TARGET DEMOGRAPHICS', icon: <GroupsIcon />,     handler: 'handleToggleDemographic' },
         { label: 'COMPETITION HEATMAP', icon: <MapIcon />,        handler: 'handleToggleHeatmap'     },
     ];

@@ -12,7 +12,8 @@ const filtersSlice = createSlice({
       income: [],
       education: [],
       density: [],
-    }
+    },
+    radius: 5,  // default radius in km
   },
   reducers: {
     toggleDemographicFilter: (state, action) => {
@@ -26,9 +27,12 @@ const filtersSlice = createSlice({
       state.industry.label  = action.payload.label;
       state.industry.osmTag = action.payload.osmTag;
     },
+    setRadius: (state, action) => {
+      state.radius = action.payload;
+    }
   },
 });
 
-export const { toggleDemographicFilter, setIndustry } = filtersSlice.actions;
+export const { toggleDemographicFilter, setIndustry, setRadius } = filtersSlice.actions;
 export default filtersSlice.reducer;
 
