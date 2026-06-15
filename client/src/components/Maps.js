@@ -6,13 +6,22 @@ import { useTheme } from '@mui/material/styles';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Converts placesResults array into a GeoJSON FeatureCollection for Mapbox heatmap
-const toGeoJSON = (positions = []) => ({
+const toGeoJSON = (elements = []) => ({
   type: 'FeatureCollection',
-  features: positions.map(({ lat, lng, weight = 1 }) => ({
-    type: 'Feature',
-    properties: { weight },
-    geometry: { type: 'Point', coordinates: [lng, lat] }
-  }))
+  features: elements
+      .map((el) => {
+        // nodes have top-level lat/lon
+        // ways have center.lat/center.lon
+        const lat = el.lat ?? el.center?.lat;
+        const lon = el.lon ?? el.center?.lon;
+        if (!lat || !lon) return null;
+        return {
+          type: 'Feature',
+          properties: { weight: 1 },
+          geometry: { type: 'Point', coordinates: [lon, lat] }
+        };
+      })
+      .filter(Boolean)  // remove nulls
 });
 
 // Mapbox heatmap layer — cyan → blue → red gradient
@@ -49,6 +58,7 @@ export const Maps = ({
   const [popupInfo, setPopupInfo] = useState(null);
 
   const location = useSelector((state) => state.location);
+  const { overpassData, censusData, loading, error } = useSelector((state) => state.heatmap);
 
   const handleMarkerEnter = useCallback((marker) => setPopupInfo(marker), []);
   const handleMarkerLeave = useCallback(() => setPopupInfo(null), []);
@@ -59,7 +69,9 @@ export const Maps = ({
     zoom: location.zoom ?? 11
   };
 
-  const geoData = toGeoJSON(placesResults[0] || []);
+  const geoData = overpassData?.elements
+      ? toGeoJSON(overpassData.elements)
+      : { type: 'FeatureCollection', features: [] };
 
   const BROWN = theme.palette.secondary.main;
 

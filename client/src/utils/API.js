@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({
+export const api = axios.create({
     baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001',
     withCredentials: true,
 });
@@ -50,3 +50,12 @@ export const getSearchHistory = () =>
 
 export const clearSearchHistory = () =>
     api.delete('/api/search/history').then(res => res.data);
+
+export const fetchCensusData = ({ lat, lng, filters }) =>
+    api.get('/api/census', {
+        params: {
+            lat,
+            lng,
+            filters: JSON.stringify(filters),  // serialize for query string
+        }
+    }).then(res => res.data);

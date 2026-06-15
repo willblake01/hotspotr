@@ -1,38 +1,8 @@
 const axios = require('axios');
 const { authValidationRules, signupValidationRules, validateRequest } = require('../middleware/validation');
+const { DEMOGRAPHICS_FILTERS } = require('../config/demographicsFilters');
 
 module.exports = (app, passport) => {
-  // =============================================================================
-  // DEMOGRAPHIC FILTERS CONFIGURATION ==========================================
-  // =============================================================================
-
-  const DEMOGRAPHIC_FILTERS = {
-    age: [
-      { label: '18-24', variables: ['B01001_007E', 'B01001_008E', 'B01001_009E', 'B01001_010E', 'B01001_011E'] },
-      { label: '25-34', variables: ['B01001_011E', 'B01001_012E'] },
-      { label: '35-44', variables: ['B01001_013E', 'B01001_014E'] },
-      { label: '45-54', variables: ['B01001_015E', 'B01001_016E'] },
-      { label: '55+',   variables: ['B01001_017E', 'B01001_018E', 'B01001_019E', 'B01001_020E', 'B01001_021E', 'B01001_022E', 'B01001_023E', 'B01001_024E', 'B01001_025E'] },
-    ],
-    income: [
-      { label: 'Under $30k', variables: ['B19001_002E', 'B19001_003E', 'B19001_004E', 'B19001_005E', 'B19001_006E'] },
-      { label: '$30k-$60k',  variables: ['B19001_007E', 'B19001_008E', 'B19001_009E', 'B19001_010E', 'B19001_011E'] },
-      { label: '$60k-$100k', variables: ['B19001_012E', 'B19001_013E'] },
-      { label: '$100k+',     variables: ['B19001_014E', 'B19001_015E', 'B19001_016E', 'B19001_017E'] },
-    ],
-    education: [
-      { label: 'High School',   variables: ['B15003_017E', 'B15003_018E'] },
-      { label: 'Some College',  variables: ['B15003_019E', 'B15003_020E'] },
-      { label: "Bachelor's",    variables: ['B15003_022E'] },
-      { label: 'Graduate',      variables: ['B15003_023E', 'B15003_024E', 'B15003_025E'] },
-    ],
-    density: [
-      { label: 'Urban',    threshold: '>1000' },
-      { label: 'Suburban', threshold: '200-1000' },
-      { label: 'Rural',    threshold: '<200' },
-    ],
-  };
-
   // =============================================================================
   // AUTH ROUTES ================================================================
   // =============================================================================
@@ -174,21 +144,84 @@ module.exports = (app, passport) => {
   });
 
   // =============================================================================
-  // OVERPASS API ROUTE =========================================================
+  // EXTERNAL API ROUTES ========================================================
   // =============================================================================
+
+  // Census Bureau ACS API
+  app.get('/api/census', requireAuth, async (req, res) => {
+    const { lat, lng, filters } = req.query;
+
+    try {
+      // Step 1 — convert lat/lng to FIPS state + county + tract
+      const geoUrl = `https://geocoding.geo.census.gov/geocoder/geographies/coordinates` +
+          `?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`;
+      const geoResult = await axios.get(geoUrl);
+      const tract = geoResult.data.result.geographies['Census Tracts']?.[0];
+
+      if (!tract) {
+        return res.status(404).json({ error: 'No census tract found for this location' });
+      }
+
+      const state  = tract.STATE;
+      const county = tract.COUNTY;
+      const tractId = tract.TRACT;
+
+      // Step 2 — query ACS for that specific tract
+      const parsedFilters = filters ? JSON.parse(filters) : {};
+      const baseVars = ['B19013_001E', 'B01003_001E'];
+      const selectedVars = Object.entries(parsedFilters)
+          .flatMap(([group, labels]) =>
+              (DEMOGRAPHICS_FILTERS[group] || [])
+                  .filter(opt => labels.includes(opt.label))
+                  .flatMap(opt => opt.variables || [])
+          );
+
+      const variables = [...new Set([...baseVars, ...selectedVars])].join(',');
+      const acsUrl = `https://api.census.gov/data/2022/acs/acs5` +
+          `?get=${variables}&for=tract:${tractId}&in=state:${state}%20county:${county}` +
+          `&key=${process.env.CENSUS_API_KEY}`;
+
+      const result = await axios.get(acsUrl);
+      res.json(result.data);
+
+    } catch (err) {
+      console.error('Census API error:', err.message);
+      res.status(502).json({ error: 'Census API unavailable' });
+    }
+  });
+
+  // BLS OEWS API
+  app.get('/api/bls', requireAuth, async (req, res) => {
+    try {
+      const result = await axios.post(
+          'https://api.bls.gov/publicAPI/v2/timeseries/data/',
+          {
+            seriesid: ['OEUS000000000000000001'],
+            registrationkey: process.env.BLS_API_KEY,
+          }
+      );
+      res.json(result.data);
+    } catch (err) {
+      console.error('BLS API error:', err.message);
+      res.status(502).json({ error: 'BLS API unavailable' });
+    }
+  });
+
+  // OpenStreetMap Overpass API
+  const OVERPASS_ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+  ];
 
   app.get('/api/overpass', requireAuth, async (req, res) => {
     const { lat, lng, osmTag } = req.query;
-    const radius = 5000; // 5km radius
-
-    // Parse osmTag into key and value — e.g. 'amenity=restaurant'
+    const radius = 5000;
     const [key, value] = osmTag.split('=');
-    const tagFilter = value === '*'
-      ? `["${key}"]`
-      : `["${key}"="${value}"]`;
+    const tagFilter = value === '*' ? `["${key}"]` : `["${key}"="${value}"]`;
 
     const query = `
-    [out:json];
+    [out:json][timeout:25];
     (
       node${tagFilter}(around:${radius},${lat},${lng});
       way${tagFilter}(around:${radius},${lat},${lng});
@@ -196,36 +229,22 @@ module.exports = (app, passport) => {
     out center;
   `;
 
-    const result = await axios.post(
-      'https://overpass-api.de/api/interpreter',
-      `data=${encodeURIComponent(query)}`
-    );
-    res.json(result.data);
-  });
+    const encoded = `data=${encodeURIComponent(query)}`;
+    const config = {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      timeout: 15000,
+    };
 
-  // =============================================================================
-  // CENSUS API ROUTE ===========================================================
-  // =============================================================================
+    for (const url of OVERPASS_ENDPOINTS) {
+      try {
+        console.log(`Trying Overpass endpoint: ${url}`);
+        const result = await axios.post(url, encoded, config);
+        return res.json(result.data);
+      } catch (err) {
+        console.warn(`Overpass endpoint ${url} failed:`, err.message);
+      }
+    }
 
-  app.get('/api/census', requireAuth, async (req, res) => {
-    const { lat, lng, filters } = req.query;
-    const parsedFilters = JSON.parse(filters);
-
-    // Always include base variables
-    const baseVars = ['B19013_001E', 'B01003_001E'];
-
-    // Flatten selected filter variables
-    const selectedVars = Object.entries(parsedFilters)
-      .flatMap(([group, labels]) =>
-        DEMOGRAPHIC_FILTERS[group]
-          .filter(opt => labels.includes(opt.label))
-          .flatMap(opt => opt.variables || [])
-      );
-
-    const variables = [...new Set([...baseVars, ...selectedVars])].join(',');
-    const url = `https://api.census.gov/data/2022/acs/acs5?get=${variables}&for=tract:*&in=state:*&key=${process.env.CENSUS_API_KEY}`;
-
-    const result = await axios.get(url);
-    res.json(result.data);
+    res.status(502).json({ error: 'All Overpass endpoints unavailable. Please try again.' });
   });
 };
