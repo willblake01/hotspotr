@@ -3,6 +3,7 @@ import Map, { Source, Layer, Marker, Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import RoomIcon from '@mui/icons-material/Room';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Converts placesResults array into a GeoJSON FeatureCollection for Mapbox heatmap
@@ -51,14 +52,19 @@ const heatmapLayer = {
 };
 
 export const Maps = ({
-  placesResults = []
+    placesResults = [],
+    showCompetitors = false,
 }) => {
   const theme = useTheme();
   const mapRef = useRef(null);
+
   const [popupInfo, setPopupInfo] = useState(null);
+  const [hoveredCompetitor, setHoveredCompetitor] = useState(null);
 
   const location = useSelector((state) => state.location);
-  const { overpassData, censusData, loading, error } = useSelector((state) => state.heatmap);
+  const { censusData, loading, error } = useSelector((state) => state.heatmap);
+  const overpassData = useSelector((state) => state.heatmap.overpassData);
+  const filters = useSelector((state) => state.filters);
 
   const handleMarkerEnter = useCallback((marker) => setPopupInfo(marker), []);
   const handleMarkerLeave = useCallback(() => setPopupInfo(null), []);
@@ -69,9 +75,7 @@ export const Maps = ({
     zoom: location.zoom ?? 11
   };
 
-  const geoData = overpassData?.elements
-      ? toGeoJSON(overpassData.elements)
-      : { type: 'FeatureCollection', features: [] };
+  const geoData = { type: 'FeatureCollection', features: [] };
 
   const BROWN = theme.palette.secondary.main;
 
@@ -112,6 +116,39 @@ export const Maps = ({
               <Source id='heatmap-source' type='geojson' data={geoData}>
                 <Layer {...heatmapLayer} />
               </Source>
+          )}
+
+          {showCompetitors && overpassData?.elements?.map((el) => {
+            const lat = el.lat ?? el.center?.lat;
+            const lon = el.lon ?? el.center?.lon;
+            const name = el.tags?.name || filters.industry.label;
+            if (!lat || !lon) return null;
+            return (
+                <Marker
+                    key={el.id}
+                    latitude={lat}
+                    longitude={lon}
+                >
+                  <RoomIcon
+                      sx={{ color: '#573525', fontSize: '28px', cursor: 'pointer' }}
+                      onMouseEnter={() => setHoveredCompetitor({ lat, lon, name })}
+                      onMouseLeave={() => setHoveredCompetitor(null)}
+                  />
+                </Marker>
+            );
+          })}
+
+          {hoveredCompetitor && (
+              <Popup
+                  latitude={hoveredCompetitor.lat}
+                  longitude={hoveredCompetitor.lon}
+                  closeButton={false}
+                  anchor='top'
+              >
+                <Typography variant='body2' sx={{ color: BROWN, fontWeight: 'bold' }}>
+                  {hoveredCompetitor.name}
+                </Typography>
+              </Popup>
           )}
 
           <Marker
