@@ -7,12 +7,15 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { INDUSTRY_OPTIONS } from '../config/industryOptions';
 import { setIndustry } from '../store/filtersSlice';
+import { fetchLocationData } from '../store/heatmapSlice';
 
-export const IndustryForm = ({ handleSubmit }) => {
+export const IndustryForm = ({ onSubmit }) => {
     const theme = useTheme();
     const dispatch = useDispatch();
+    const location = useSelector((state) => state.location);
     const selectedIndustry = useSelector((state) => state.filters.industry);
-    const [localSelection, setLocalSelection] = useState(selectedIndustry || '');
+    const [localSelection, setLocalSelection] = useState(selectedIndustry?.label || '');
+    const [error, setError] = useState('');
 
     const ORANGE = theme.palette.primary.main;
     const BROWN = theme.palette.secondary.main;
@@ -20,14 +23,21 @@ export const IndustryForm = ({ handleSubmit }) => {
 
     const handleChange = (event) => {
         setLocalSelection(event.target.value);
+        setError('');
     };
 
     const handleApply = () => {
         const option = INDUSTRY_OPTIONS.find(o => o.label === localSelection);
-        if (option) {
-            dispatch(setIndustry({ label: option.label, osmTag: option.osmTag }));
-            handleSubmit();
+        if (!option) return;
+
+        if (!location.lat || !location.lng) {
+            setError('Please search a location first.');
+            return;
         }
+
+        dispatch(setIndustry({ label: option.label, osmTag: option.osmTag }));
+        dispatch(fetchLocationData({ osmTag: option.osmTag }));
+        onSubmit();
     };
 
     return (
@@ -46,6 +56,15 @@ export const IndustryForm = ({ handleSubmit }) => {
             >
                 What industry are you competing in?
             </Typography>
+
+            {error && (
+                <Typography
+                    variant='body2'
+                    sx={{ color: 'error.main', fontSize: '0.875rem' }}
+                >
+                    {error}
+                </Typography>
+            )}
 
             <FormControl fullWidth size='small'>
                 <InputLabel sx={{ color: BROWN }}>Select Industry</InputLabel>

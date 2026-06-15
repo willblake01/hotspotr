@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     Box, Typography, FormGroup, FormControlLabel,
     Checkbox, Button, Divider
 } from '@mui/material';
 import { toggleDemographicFilter } from "../store/filtersSlice";
+import { fetchCensusOnly } from '../store/heatmapSlice';
 
 const DEMOGRAPHIC_FILTERS = {
     age: [
@@ -32,18 +34,44 @@ const DEMOGRAPHIC_FILTERS = {
     ],
 };
 
-export const DemographicsForm = ({ handleSubmit }) => {
+export const DemographicsForm = ({ onSubmit }) => {
     const dispatch = useDispatch();
     const selectedFilters = useSelector((state) => state.filters.demographics);
+    const location = useSelector((state) => state.location);
+    const filters = useSelector((state) => state.filters);
+    const [error, setError] = useState('');
 
     const handleCheck = (group, label) => {
         dispatch(toggleDemographicFilter({ group, label }));
+        setError('');
+    };
+
+    const handleApply = () => {
+        if (!location.lat || !location.lng) {
+            setError('Please search a location first.');
+            return;
+        }
+        if (!filters.industry.osmTag) {
+            setError('Please select a Target Industry first.');
+            return;
+        }
+        dispatch(fetchCensusOnly());  // separate thunk — Overpass and BLS not re-called
+        onSubmit();
     };
 
     const hasSelection = Object.values(selectedFilters).some(g => g.length > 0);
 
     return (
         <Box sx={{ p: '20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {error && (
+                <Typography
+                    variant='body2'
+                    sx={{ color: 'error.main', fontSize: '0.875rem' }}
+                >
+                    {error}
+                </Typography>
+            )}
+
             {Object.entries(DEMOGRAPHIC_FILTERS).map(([group, options]) => (
                 <Box key={group}>
                     <Typography variant='subtitle2' sx={{ fontWeight: 'bold', textTransform: 'capitalize', mb: 1 }}>
@@ -69,7 +97,7 @@ export const DemographicsForm = ({ handleSubmit }) => {
             ))}
 
             <Button
-                onClick={handleSubmit}
+                onClick={handleApply}
                 disabled={!hasSelection}
                 variant='contained'
                 sx={{ borderRadius: '25px', textTransform: 'none' }}

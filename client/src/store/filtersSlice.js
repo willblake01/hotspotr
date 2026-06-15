@@ -3,13 +3,16 @@ import { createSlice } from '@reduxjs/toolkit';
 const filtersSlice = createSlice({
   name: 'filters',
   initialState: {
+    industry: {
+      label: '',
+      osmTag: '',
+    },
     demographics: {
       age: [],
       income: [],
       education: [],
       density: [],
-    },
-    industry: '',
+    }
   },
   reducers: {
     toggleDemographicFilter: (state, action) => {
@@ -20,7 +23,8 @@ const filtersSlice = createSlice({
         : [...current, label];
     },
     setIndustry: (state, action) => {
-      state.industry = action.payload;
+      state.industry.label  = action.payload.label;
+      state.industry.osmTag = action.payload.osmTag;
     },
   },
 });
