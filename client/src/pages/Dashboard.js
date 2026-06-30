@@ -49,6 +49,11 @@ export const Dashboard = () => {
     }
   };
 
+  const overpassData = useSelector((state) => state.heatmap.overpassData);
+  const competitorCount = overpassData?.elements?.filter(
+      (el) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon)
+  ).length || 0;
+
   // Step 1 — rehydrate session state and search history on mount
   useEffect(() => {
     getSessionState()
@@ -159,6 +164,9 @@ export const Dashboard = () => {
                 handleToggleRadius={handleToggleRadius}
                 handleToggleDemographics={handleToggleDemographics}
                 handleToggleCompetitors={handleToggleCompetitors}
+                showCompetitors={showCompetitors}
+                competitorCount={competitorCount}
+                hasCompetitorData={!!overpassData}
             />
 
             <Drawer
