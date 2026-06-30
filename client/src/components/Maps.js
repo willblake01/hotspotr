@@ -1,92 +1,94 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Map, { Source, Layer, Marker, Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import RoomIcon from '@mui/icons-material/Room';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { buildScoredGeoJSON } from '../utils/scoring';
 
-// Converts placesResults array into a GeoJSON FeatureCollection for Mapbox heatmap
-const toGeoJSON = (elements = []) => ({
-  type: 'FeatureCollection',
-  features: elements
-      .map((el) => {
-        // nodes have top-level lat/lon
-        // ways have center.lat/center.lon
-        const lat = el.lat ?? el.center?.lat;
-        const lon = el.lon ?? el.center?.lon;
-        if (!lat || !lon) return null;
-        return {
-          type: 'Feature',
-          properties: { weight: 1 },
-          geometry: { type: 'Point', coordinates: [lon, lat] }
-        };
-      })
-      .filter(Boolean)  // remove nulls
-});
-
-// Mapbox heatmap layer — cyan → blue → red gradient
-const heatmapLayer = {
-  id: 'heatmap-layer',
-  type: 'heatmap',
+// Fill layer for H3 hexagonal opportunity cells
+const opportunityLayer = {
+  id: 'opportunity-layer',
+  type: 'fill',
   paint: {
-    'heatmap-radius': 20,
-    'heatmap-opacity': 0.7,
-    'heatmap-weight': ['interpolate', ['linear'], ['get', 'weight'], 0, 0, 1, 1],
-    'heatmap-color': [
-      'interpolate', ['linear'], ['heatmap-density'],
-      0,   'rgba(0,255,255,0)',
-      0.1, 'rgba(0,255,255,1)',
-      0.2, 'rgba(0,191,255,1)',
-      0.3, 'rgba(0,127,255,1)',
-      0.4, 'rgba(0,63,255,1)',
-      0.5, 'rgba(0,0,255,1)',
-      0.6, 'rgba(0,0,191,1)',
-      0.7, 'rgba(0,0,127,1)',
-      0.8, 'rgba(63,0,91,1)',
-      0.9, 'rgba(127,0,63,1)',
-      1.0, 'rgba(255,0,0,1)'
+    'fill-color': [
+      'interpolate', ['linear'], ['get', 'weight'],
+      0,   'rgba(0,255,255,0.1)',
+      0.3, 'rgba(0,127,255,0.4)',
+      0.6, 'rgba(127,0,91,0.6)',
+      0.8, 'rgba(191,0,31,0.7)',
+      1.0, 'rgba(255,0,0,0.85)',
     ],
-    'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 15, 3]
+    'fill-outline-color': 'rgba(0,0,0,0.05)',
   }
 };
 
-export const Maps = ({
-    placesResults = [],
-    showCompetitors = false,
-}) => {
+export const Maps = ({ showCompetitors = false }) => {
   const theme = useTheme();
   const mapRef = useRef(null);
-
-  const [popupInfo, setPopupInfo] = useState(null);
   const [hoveredCompetitor, setHoveredCompetitor] = useState(null);
+  const [popupInfo, setPopupInfo] = useState(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
-  const location = useSelector((state) => state.location);
-  const { censusData, loading, error } = useSelector((state) => state.heatmap);
+  const location     = useSelector((state) => state.location);
   const overpassData = useSelector((state) => state.heatmap.overpassData);
-  const filters = useSelector((state) => state.filters);
+  const censusData   = useSelector((state) => state.heatmap.censusData);
+  const demographics = useSelector((state) => state.filters.demographics);
+  const filters      = useSelector((state) => state.filters);
+
+  const BROWN = theme.palette.secondary.main;
 
   const handleMarkerEnter = useCallback((marker) => setPopupInfo(marker), []);
   const handleMarkerLeave = useCallback(() => setPopupInfo(null), []);
 
   const initialViewState = {
-    latitude: location.lat ?? 30.27, // Default to Austin, TX if no location
-    longitude: location.lng ?? -97.740,
-    zoom: location.zoom ?? 11
+    latitude:  location.lat  ?? 30.27,
+    longitude: location.lng  ?? -97.74,
+    zoom:      location.zoom ?? 11,
   };
 
-  const geoData = { type: 'FeatureCollection', features: [] };
+  // Build bbox — use location.bbox if available, otherwise derive from coordinates + radius
+  const radiusDeg = (filters.radius || 5) * 0.009;
+  const bbox = location.bbox || [
+    location.lng - radiusDeg,
+    location.lat - radiusDeg,
+    location.lng + radiusDeg,
+    location.lat + radiusDeg,
+  ];
 
-  const BROWN = theme.palette.secondary.main;
+  // Recalculate scored GeoJSON only when relevant data changes
+  const geoData = useMemo(() => {
+    return buildScoredGeoJSON(
+        overpassData, censusData, demographics, bbox,
+        filters.radius || 5,
+        { lat: location.lat, lng: location.lng }  // pass actual center
+    );
+  }, [overpassData, censusData, demographics, location.bbox, location.lat, location.lng, filters.radius]);
 
-  const isFirstMount = useRef(true);
-
+  // Snap to restored location once map is loaded and location is available
   useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
+    if (!mapLoaded || !mapRef.current) return;
+    if (!location.placeName || location.placeName === 'Your Location') return;
+
+    if (location.bbox) {
+      mapRef.current.fitBounds(
+          [[location.bbox[0], location.bbox[1]], [location.bbox[2], location.bbox[3]]],
+          { padding: 40, duration: 0 }
+      );
+    } else {
+      mapRef.current.flyTo({
+        center: [location.lng, location.lat],
+        zoom: 13,
+        duration: 0,
+      });
     }
-    if (!mapRef.current) return;
+  }, [mapLoaded, location.placeName]); // fires when map loads OR placeName is restored
+
+// Animate to new location on user search
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    if (!location.placeName || location.placeName === 'Your Location') return;
 
     if (location.bbox) {
       mapRef.current.fitBounds(
@@ -103,34 +105,32 @@ export const Maps = ({
   }, [location.lat, location.lng]);
 
   return (
-      // mapClass and inline style replaced with MUI Box sx
       <Box sx={{ height: '60vh', width: '100%' }}>
         <Map
             ref={mapRef}
+            onLoad={() => setMapLoaded(true)}
             mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
             initialViewState={initialViewState}
             style={{ width: '100%', height: '100%' }}
             mapStyle='mapbox://styles/mapbox/streets-v12'
         >
+          {/* H3 hexagonal opportunity score layer */}
           {geoData.features.length > 0 && (
-              <Source id='heatmap-source' type='geojson' data={geoData}>
-                <Layer {...heatmapLayer} />
+              <Source id='opportunity-source' type='geojson' data={geoData}>
+                <Layer {...opportunityLayer} />
               </Source>
           )}
 
+          {/* Competitor pins — toggled by Show Competitors button */}
           {showCompetitors && overpassData?.elements?.map((el) => {
-            const lat = el.lat ?? el.center?.lat;
-            const lon = el.lon ?? el.center?.lon;
+            const lat  = el.lat ?? el.center?.lat;
+            const lon  = el.lon ?? el.center?.lon;
             const name = el.tags?.name || filters.industry.label;
             if (!lat || !lon) return null;
             return (
-                <Marker
-                    key={el.id}
-                    latitude={lat}
-                    longitude={lon}
-                >
+                <Marker key={el.id} latitude={lat} longitude={lon}>
                   <RoomIcon
-                      sx={{ color: '#573525', fontSize: '28px', cursor: 'pointer' }}
+                      sx={{ color: BROWN, fontSize: '28px', cursor: 'pointer' }}
                       onMouseEnter={() => setHoveredCompetitor({ lat, lon, name })}
                       onMouseLeave={() => setHoveredCompetitor(null)}
                   />
@@ -138,6 +138,7 @@ export const Maps = ({
             );
           })}
 
+          {/* Competitor hover popup */}
           {hoveredCompetitor && (
               <Popup
                   latitude={hoveredCompetitor.lat}
@@ -151,6 +152,7 @@ export const Maps = ({
               </Popup>
           )}
 
+          {/* User location marker */}
           <Marker
               latitude={location.lat}
               longitude={location.lng}
@@ -158,6 +160,7 @@ export const Maps = ({
               onMouseLeave={handleMarkerLeave}
           />
 
+          {/* User location popup */}
           {popupInfo && (
               <Popup
                   latitude={popupInfo.lat}
@@ -165,7 +168,6 @@ export const Maps = ({
                   closeButton={false}
                   anchor='top'
               >
-                {/* Popup text styled with MUI Typography */}
                 <Typography variant='body2' sx={{ color: BROWN }}>
                   {popupInfo.text}
                 </Typography>

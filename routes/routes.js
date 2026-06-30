@@ -202,7 +202,7 @@ module.exports = (app, passport) => {
       );
       res.json(result.data);
     } catch (err) {
-      console.error('BLS API error:', err.message);
+      console.warn('BLS API unavailable:', err.message);
       res.status(502).json({ error: 'BLS API unavailable' });
     }
   });
@@ -230,7 +230,10 @@ module.exports = (app, passport) => {
 
     const encoded = `data=${encodeURIComponent(query)}`;
     const config = {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'user-Agent': 'HotSpotr/1.0 (business location intelligence app)',
+      },
       timeout: 15000,
     };
 
@@ -245,5 +248,28 @@ module.exports = (app, passport) => {
     }
 
     res.status(502).json({ error: 'All Overpass endpoints unavailable. Please try again.' });
+  });
+
+  app.get('/api/filters', (req, res) => {
+    res.status(200).json({ filters: req.session.filters || null });
+  });
+
+  app.post('/api/filters', (req, res) => {
+    req.session.filters = req.body;
+    res.status(200).json({ filters: req.session.filters });
+  });
+
+  app.get('/api/session-state', (req, res) => {
+    res.status(200).json({
+      filters: req.session.filters || null,
+      location: req.session.location || null,
+    });
+  });
+
+  app.post('/api/session-state', (req, res) => {
+    const { filters, location } = req.body;
+    if (filters)  req.session.filters  = filters;
+    if (location) req.session.location = location;
+    res.status(200).json({ success: true });
   });
 };

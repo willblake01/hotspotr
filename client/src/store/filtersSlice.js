@@ -16,6 +16,13 @@ const filtersSlice = createSlice({
     radius: 5,  // default radius in km
   },
   reducers: {
+    setIndustry: (state, action) => {
+      state.industry.label  = action.payload.label;
+      state.industry.osmTag = action.payload.osmTag;
+    },
+    setRadius: (state, action) => {
+      state.radius = action.payload;
+    },
     toggleDemographicFilter: (state, action) => {
       const { group, label } = action.payload;
       const current = state.demographics[group];
@@ -23,16 +30,14 @@ const filtersSlice = createSlice({
         ? current.filter(l => l !== label)
         : [...current, label];
     },
-    setIndustry: (state, action) => {
-      state.industry.label  = action.payload.label;
-      state.industry.osmTag = action.payload.osmTag;
+    setAllFilters: (state, action) => {
+      state.industry    = action.payload.industry    ?? state.industry;
+      state.demographics = action.payload.demographics ?? state.demographics;
+      state.radius      = action.payload.radius      ?? state.radius;
     },
-    setRadius: (state, action) => {
-      state.radius = action.payload;
-    }
   },
 });
 
-export const { toggleDemographicFilter, setIndustry, setRadius } = filtersSlice.actions;
+export const { setIndustry, setRadius, toggleDemographicFilter, setAllFilters } = filtersSlice.actions;
 export default filtersSlice.reducer;
 
