@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, CircularProgress, IconButton, List, ListItem, ListItemButton, ListItemText, Paper, TextField } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
@@ -37,6 +37,14 @@ export const SearchBar = () => {
         setQuery(item.placeName);
         setShowHistory(false);
     };
+
+    const placeName = useSelector((state) => state.location.placeName);
+
+    useEffect(() => {
+        if (placeName && placeName !== 'Your Location') {
+            setQuery(placeName);
+        }
+    }, [placeName]);
 
     return (
         <Box sx={{

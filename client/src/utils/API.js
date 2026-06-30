@@ -59,3 +59,15 @@ export const fetchCensusData = ({ lat, lng, filters }) =>
             filters: JSON.stringify(filters),  // serialize for query string
         }
     }).then(res => res.data);
+
+export const getSavedFilters = () =>
+    api.get('/api/filters').then(res => res.data.filters);
+
+export const saveFilters = (filters) =>
+    api.post('/api/filters', filters).then(res => res.data);
+
+export const getSessionState = () =>
+    api.get('/api/session-state').then(res => res.data);
+
+export const saveSessionState = (state) =>
+    api.post('/api/session-state', state).then(res => res.data);

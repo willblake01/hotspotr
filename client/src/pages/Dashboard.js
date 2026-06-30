@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Drawer, MenuItem, Box, Typography, useTheme } from '@mui/material';
 import { Footer } from '../components/Footer.js';
 import { IndustryForm } from '../components/IndustryForm.js';
@@ -10,11 +10,10 @@ import { Maps } from '../components/Maps.js';
 import { SearchBar } from '../components/SearchBar.js';
 import { Sidebar } from '../components/Sidebar.js';
 import { SocialMedia } from '../components/SocialMedia.js';
-import { getSearchHistory } from '../utils/API';
+import { getSearchHistory, getSessionState, saveSessionState } from '../utils/API';
 import { setHistory, setLocation } from '../store/locationSlice';
-
-// IndustryForm, RadiusForm, DemographicsForm now manage their own state
-// via Redux filtersSlice — no handleInputChange or handleSubmit needed here
+import { setAllFilters } from '../store/filtersSlice';
+import { fetchLocationData } from '../store/heatmapSlice';
 
 const DB_BG = 'https://res.cloudinary.com/willblake01/image/upload/v1538510014/hotspotr/dashboard-background.jpg';
 
@@ -23,16 +22,56 @@ export const Dashboard = () => {
   const dispatch = useDispatch();
 
   const ORANGE = theme.palette.primary.main;
-  const BROWN = theme.palette.secondary.main;
-  const WHITE = theme.custom.white;
+  const BROWN  = theme.palette.secondary.main;
+  const WHITE  = theme.custom.white;
 
   const [open, setOpen] = useState(false);
   const [whichForm, setWhichForm] = useState('');
   const [showCompetitors, setShowCompetitors] = useState(false);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
 
-  // Geolocation — center map on user's current position on mount
+  const filters  = useSelector((state) => state.filters);
+  const location = useSelector((state) => state.location);
+
+  const handleClose = () => setOpen(false);
+
+  const handleToggleIndustry     = () => { setOpen(!open); setWhichForm('industry'); };
+  const handleToggleRadius       = () => { setOpen(!open); setWhichForm('location'); };
+  const handleToggleDemographics = () => { setOpen(!open); setWhichForm('demographic'); };
+  const handleToggleCompetitors  = () => setShowCompetitors(prev => !prev);
+
+  const formSelection = () => {
+    switch (whichForm) {
+      case 'industry':    return <IndustryForm onSubmit={handleClose} />;
+      case 'location':    return <RadiusForm onSubmit={handleClose} />;
+      case 'demographic': return <DemographicsForm onSubmit={handleClose} />;
+      default:            return null;
+    }
+  };
+
+  // Step 1 — rehydrate session state and search history on mount
   useEffect(() => {
+    getSessionState()
+        .then(({ filters: savedFilters, location: savedLocation }) => {
+          if (savedFilters)  dispatch(setAllFilters(savedFilters));
+          if (savedLocation) dispatch(setLocation({ ...savedLocation, query: 'restored' }));
+        })
+        .catch((err) => console.warn('Session state unavailable:', err.message))
+        .finally(() => setSessionLoaded(true));
+
+    getSearchHistory()
+        .then((history) => {
+          if (history?.length > 0) dispatch(setHistory(history));
+        })
+        .catch((err) => console.warn('Search history unavailable:', err.message));
+  }, [dispatch]);
+
+  // Step 2 — geolocate only if session has loaded and no saved location exists
+  useEffect(() => {
+    if (!sessionLoaded) return;
+    if (location.placeName && location.placeName !== 'Your Location') return;
     if (!navigator.geolocation) return;
+
     navigator.geolocation.getCurrentPosition(
         (position) => {
           dispatch(setLocation({
@@ -45,44 +84,29 @@ export const Dashboard = () => {
         (err) => console.warn('Geolocation unavailable:', err.message),
         { timeout: 5000, maximumAge: 60000 }
     );
-  }, [dispatch]);
+  }, [sessionLoaded]);
 
-  // Rehydrate search history from Redis session on mount
+  // Step 3 — re-fire data fetch if industry and location were restored from session
+  // Heatmap data is not persisted to Redis — re-fetch ensures fresh data on restore
   useEffect(() => {
-    getSearchHistory().then((history) => {
-      if (history?.length > 0) dispatch(setHistory(history));
-    }).catch((err) => console.warn('Search history unavailable:', err.message));
-  }, [dispatch]);
+    if (!sessionLoaded) return;
+    if (!filters.industry?.osmTag) return;
+    if (!location.lat || !location.lng) return;
+    dispatch(fetchLocationData({ osmTag: filters.industry.osmTag }));
+  }, [sessionLoaded]);
 
-  const handleClose = () => setOpen(false);
-
-  const handleToggleIndustry    = () => { setOpen(!open); setWhichForm('industry'); };
-  const handleToggleRadius    = () => { setOpen(!open); setWhichForm('location'); };
-  const handleToggleDemographics = () => { setOpen(!open); setWhichForm('demographic'); };
-  const handleToggleCompetitors = () => setShowCompetitors(prev => !prev);
-
-  // Each form is self-contained — dispatches to filtersSlice directly
-  // onSubmit is passed so forms can close the Drawer after submitting
-  const formSelection = () => {
-    switch (whichForm) {
-      case 'industry':
-        return <IndustryForm onSubmit={handleClose} />;
-      case 'location':
-        return <RadiusForm onSubmit={handleClose} />;
-      case 'demographic':
-        return <DemographicsForm onSubmit={handleClose} />;
-      default:
-        return null;
-    }
-  };
+  // Step 4 — persist filters and location to Redis on every change
+  // Excludes history from location to avoid duplication with searchHistory
+  // Guard prevents overwriting Redis before session is loaded
+  useEffect(() => {
+    if (!sessionLoaded) return;
+    const { history, ...locationToSave } = location;
+    saveSessionState({ filters, location: locationToSave })
+        .catch((err) => console.warn('Failed to save session state:', err.message));
+  }, [filters, location]);
 
   return (
-      <Box sx={{
-        position: 'relative',
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden'
-      }}>
+      <Box sx={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
 
         {/* Blurred background */}
         <Box sx={{
@@ -129,13 +153,7 @@ export const Dashboard = () => {
           </Box>
 
           {/* Sidebar column */}
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            height: '100%',
-            width: '100%'
-          }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', width: '100%' }}>
             <Sidebar
                 handleToggleIndustry={handleToggleIndustry}
                 handleToggleRadius={handleToggleRadius}
@@ -150,7 +168,7 @@ export const Dashboard = () => {
                   sx: {
                     bgcolor: WHITE,
                     color: BROWN,
-                    width: '374px',  // match sidebar width
+                    width: '374px',
                   }
                 }}
             >
@@ -167,35 +185,17 @@ export const Dashboard = () => {
               {formSelection()}
             </Drawer>
 
-            <Box sx={{
-              position: 'fixed',
-              bottom: '12px'
-            }}>
+            <Box sx={{ position: 'fixed', bottom: '12px' }}>
               <SocialMedia />
             </Box>
           </Box>
 
           {/* Map column */}
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            height: '100%',
-            width: '100%'
-          }}>
-            <Box sx={{
-              position: 'relative',
-              top: '11vh',
-              width: '100%'
-            }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', width: '100%' }}>
+            <Box sx={{ position: 'relative', top: '11vh', width: '100%' }}>
               <Maps showCompetitors={showCompetitors} />
             </Box>
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              position: 'fixed',
-              bottom: 0
-            }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', position: 'fixed', bottom: 0 }}>
               <Footer />
             </Box>
           </Box>
