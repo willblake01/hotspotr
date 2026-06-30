@@ -13,14 +13,14 @@ import { userLogOut } from '../utils/API';
 import { logout } from '../actions/actionCreators';
 
 export const Sidebar = ({
-                            handleToggleIndustry,
-                            handleToggleRadius,
-                            handleToggleDemographics,
-                            handleToggleCompetitors,
-                            showCompetitors,
-                            competitorCount,
-                            hasCompetitorData,
-                        }) => {
+    handleToggleIndustry,
+    handleToggleRadius,
+    handleToggleDemographics,
+    handleToggleCompetitors,
+    showCompetitors,
+    competitorCount,
+    hasCompetitorData,
+}) => {
     const theme = useTheme();
     const navigate = useNavigate();
 

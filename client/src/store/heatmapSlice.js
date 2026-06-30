@@ -9,37 +9,20 @@ export const fetchLocationData = createAsyncThunk(
         const { lat, lng } = state.location;
         const { industry, demographics, radius } = state.filters;
 
-        if (!lat || !lng) {
-            return rejectWithValue('No location selected.');
-        }
+        const resolvedOsmTag   = passedOsmTag   || industry.osmTag;
+        const resolvedRadius   = passedRadius   || radius || 5;
 
-        // Use passed osmTag (from IndustryForm) or fall back to Redux state
-        // Direct pass avoids timing issue where state hasn't updated yet
-        const resolvedOsmTag = passedOsmTag || industry.osmTag;
-        const resolvedRadius = passedRadius || radius || 5;
-
-        if (!resolvedOsmTag) {
-            return rejectWithValue('No industry selected.');
-        }
+        if (!lat || !lng)          return rejectWithValue('No location selected.');
+        if (!resolvedOsmTag)       return rejectWithValue('No industry selected.');
 
         try {
-            const [overpassResponse, censusResponse, blsResponse] = await Promise.all([
-                api.get('/api/overpass', {
-                    params: { lat, lng, osmTag: resolvedOsmTag, radius: resolvedRadius * 1000 }, // convert km to meters
-                }),
-                api.get('/api/census', {
-                    params: { lat, lng, filters: JSON.stringify(demographics) }
-                }),
-                api.get('/api/bls', {
-                    params: { lat, lng }
-                }),
-            ]);
-
-            return {
-                overpassData: overpassResponse.data,
-                censusData: censusResponse.data,
-                blsData: blsResponse.data,
-            };
+            const response = await api.post('/api/score', {
+                lat, lng,
+                osmTag: resolvedOsmTag,
+                radius: resolvedRadius,
+                demographics,
+            });
+            return response.data; // { geoJSON, competitors }
         } catch (err) {
             return rejectWithValue(err.response?.data?.error || err.message);
         }
@@ -64,50 +47,37 @@ export const fetchCensusOnly = createAsyncThunk(
 );
 
 const heatmapSlice = createSlice({
-  name: 'heatmap',
-  initialState: {
-    overpassData: null,
-    censusData: null,
-    loading: false,
-    error: null,
-  },
-  reducers: {
-    clearHeatmapData: (state) => {
-      state.overpassData = null;
-      state.censusData = null;
-      state.error = null;
+    name: 'heatmap',
+    initialState: {
+        geoJSON: null,       // scored GeoJSON FeatureCollection
+        competitors: null,   // raw Overpass elements for competitor pins
+        loading: false,
+        error: null,
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchLocationData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchLocationData.fulfilled, (state, action) => {
-        state.loading = false;
-        state.overpassData = action.payload.overpassData;
-        state.censusData = action.payload.censusData;
-      })
-      .addCase(fetchLocationData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || action.error.message;
-      })
-      .addCase(fetchCensusOnly.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCensusOnly.fulfilled, (state, action) => {
-        state.loading = false;
-        state.censusData = action.payload;
-      })
-      .addCase(fetchCensusOnly.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || action.error.message;
-      });
-  },
+    reducers: {
+        clearHeatmap: (state) => {
+            state.geoJSON = null;
+            state.competitors = null;
+            state.error = null;
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchLocationData.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchLocationData.fulfilled, (state, action) => {
+                state.loading = false;
+                state.geoJSON = action.payload.geoJSON;
+                state.competitors = action.payload.competitors;
+            })
+            .addCase(fetchLocationData.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || action.error.message;
+            });
+    },
 });
 
-export const { clearHeatmapData } = heatmapSlice.actions;
 export default heatmapSlice.reducer;
 

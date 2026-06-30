@@ -71,36 +71,3 @@ const FormPanel = ({ question, name, placeholder, handleInputChange, handleSubmi
         </Box>
     )
 };
-
-export const IndustryForm = ({ handleInputChange, handleSubmit }) => (
-    <FormPanel
-        question='What industry are you competing in?'
-        name='industry'
-        placeholder='Ex. Real Estate'
-        handleInputChange={handleInputChange}
-        handleSubmit={handleSubmit}
-    />
-);
-
-export const LocationForm = ({ handleInputChange, handleSubmit }) => (
-    <FormPanel
-        question='What location would you like to research?'
-        name='location'
-        placeholder='Ex. Travis Co'
-        handleInputChange={handleInputChange}
-        handleSubmit={handleSubmit}
-    />
-);
-
-export const DemographicForm = ({ handleInputChange, handleSubmit }) => (
-    <FormPanel
-        question='What demographic would you like to research?'
-        name='demographic'
-        placeholder='Ex. Age'
-        handleInputChange={handleInputChange}
-        handleSubmit={handleSubmit}
-    />
-);
-
-// Placeholder for future heatmap competition panel
-export const CompetitionHeatmap = () => <Box />;
