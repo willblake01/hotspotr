@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Map, { Source, Layer, Marker, Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
-import { Box, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import RoomIcon from '@mui/icons-material/Room';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { buildScoredGeoJSON } from '../utils/scoring';
 
 // Fill layer for H3 hexagonal opportunity cells
 const opportunityLayer = {
@@ -31,11 +30,8 @@ export const Maps = ({ showCompetitors = false }) => {
   const [popupInfo, setPopupInfo] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const location     = useSelector((state) => state.location);
-  const overpassData = useSelector((state) => state.heatmap.overpassData);
-  const censusData   = useSelector((state) => state.heatmap.censusData);
-  const demographics = useSelector((state) => state.filters.demographics);
-  const filters      = useSelector((state) => state.filters);
+  const location = useSelector((state) => state.location);
+  const filters = useSelector((state) => state.filters);
 
   const BROWN = theme.palette.secondary.main;
 
@@ -48,23 +44,12 @@ export const Maps = ({ showCompetitors = false }) => {
     zoom:      location.zoom ?? 11,
   };
 
-  // Build bbox — use location.bbox if available, otherwise derive from coordinates + radius
-  const radiusDeg = (filters.radius || 5) * 0.009;
-  const bbox = location.bbox || [
-    location.lng - radiusDeg,
-    location.lat - radiusDeg,
-    location.lng + radiusDeg,
-    location.lat + radiusDeg,
-  ];
+  const geoJSON = useSelector((state) => state.heatmap.geoJSON);
+  const competitors = useSelector((state) => state.heatmap.competitors);
 
-  // Recalculate scored GeoJSON only when relevant data changes
-  const geoData = useMemo(() => {
-    return buildScoredGeoJSON(
-        overpassData, censusData, demographics, bbox,
-        filters.radius || 5,
-        { lat: location.lat, lng: location.lng }  // pass actual center
-    );
-  }, [overpassData, censusData, demographics, location.bbox, location.lat, location.lng, filters.radius]);
+  const geoData = geoJSON || { type: 'FeatureCollection', features: [] };
+
+  const { loading } = useSelector((state) => state.heatmap);
 
   // Snap to restored location once map is loaded and location is available
   useEffect(() => {
@@ -105,7 +90,25 @@ export const Maps = ({ showCompetitors = false }) => {
   }, [location.lat, location.lng]);
 
   return (
-      <Box sx={{ height: '60vh', width: '100%' }}>
+      <Box sx={{ height: '60vh', width: '100%', position: 'relative' }}>
+        {loading && (
+            <Box sx={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              zIndex: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'rgba(0,0,0,0.3)',
+              gap: 2,
+            }}>
+              <CircularProgress sx={{ color: 'white' }} size={48} />
+              <Typography variant='body1' sx={{ color: 'white', fontWeight: 'bold' }}>
+                Analyzing location data...
+              </Typography>
+            </Box>
+        )}
         <Map
             ref={mapRef}
             onLoad={() => setMapLoaded(true)}
@@ -122,7 +125,7 @@ export const Maps = ({ showCompetitors = false }) => {
           )}
 
           {/* Competitor pins — toggled by Show Competitors button */}
-          {showCompetitors && overpassData?.elements?.map((el) => {
+          {showCompetitors && competitors?.map((el) => {
             const lat  = el.lat ?? el.center?.lat;
             const lon  = el.lon ?? el.center?.lon;
             const name = el.tags?.name || filters.industry.label;

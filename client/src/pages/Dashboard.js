@@ -49,8 +49,8 @@ export const Dashboard = () => {
     }
   };
 
-  const overpassData = useSelector((state) => state.heatmap.overpassData);
-  const competitorCount = overpassData?.elements?.filter(
+  const competitors = useSelector((state) => state.heatmap.competitors);
+  const competitorCount = competitors?.elements?.filter(
       (el) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon)
   ).length || 0;
 
@@ -166,7 +166,7 @@ export const Dashboard = () => {
                 handleToggleCompetitors={handleToggleCompetitors}
                 showCompetitors={showCompetitors}
                 competitorCount={competitorCount}
-                hasCompetitorData={!!overpassData}
+                hasCompetitorData={!!competitors}
             />
 
             <Drawer
